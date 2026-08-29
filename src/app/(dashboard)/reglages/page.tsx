@@ -70,6 +70,7 @@ export default function ReglagesPage() {
   const [capaciteDefault, setCapaciteDefault] = useState(350)
   const [saving, setSaving] = useState(false)
   const [saved, setSaved] = useState(false)
+  const [saveError, setSaveError] = useState<string | null>(null)
   const [joursOuverture, setJoursOuverture] = useState<string[]>([])
   const [seuilAlerte, setSeuilAlerte] = useState(10)
   const [horairesPreferentiels, setHorairesPreferentiels] = useState<HorairePreset[]>([])
@@ -140,6 +141,7 @@ export default function ReglagesPage() {
     if (!clubId) return
     setSaving(true)
     setSaved(false)
+    setSaveError(null)
     try {
       // Géocoder l'adresse si renseignée
       let lat: number | null = null
@@ -150,10 +152,19 @@ export default function ReglagesPage() {
       }
 
       // Mettre à jour la capacité dans clubs
-      await supabase.from('clubs').update({ capacite: data.capacite }).eq('id', clubId)
+      const { error: clubError } = await supabase
+        .from('clubs')
+        .update({ capacite: data.capacite })
+        .eq('id', clubId)
+
+      if (clubError) {
+        console.error('[reglages] update clubs', clubError)
+        setSaveError(`Erreur (clubs) : ${clubError.message}`)
+        return
+      }
 
       // Upsert club_settings
-      await supabase.from('club_settings').upsert({
+      const { error: settingsError } = await supabase.from('club_settings').upsert({
         club_id:            clubId,
         type_etablissement: data.type_etablissement,
         type_lieu:          data.type_lieu,
@@ -174,6 +185,12 @@ export default function ReglagesPage() {
         horaires_preferentiels: horairesPreferentiels,
         updated_at:         new Date().toISOString(),
       }, { onConflict: 'club_id' })
+
+      if (settingsError) {
+        console.error('[reglages] upsert club_settings', settingsError)
+        setSaveError(`Erreur (club_settings) : ${settingsError.message}`)
+        return
+      }
 
       setSaved(true)
     } finally {
@@ -202,7 +219,7 @@ export default function ReglagesPage() {
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-1.5">
                 <Label>Type d'établissement</Label>
-                <Select defaultValue="bar" onValueChange={v => setValue('type_etablissement', v as 'bar' | 'discotheque')}>
+                <Select value={watch('type_etablissement')} onValueChange={v => setValue('type_etablissement', v as 'bar' | 'discotheque')}>
                   <SelectTrigger><SelectValue /></SelectTrigger>
                   <SelectContent>
                     <SelectItem value="bar">Bar</SelectItem>
@@ -212,7 +229,7 @@ export default function ReglagesPage() {
               </div>
               <div className="space-y-1.5">
                 <Label>Exposition météo</Label>
-                <Select onValueChange={v => setValue('type_lieu', v as string)}>
+                <Select value={watch('type_lieu')} onValueChange={v => setValue('type_lieu', v as string)}>
                   <SelectTrigger><SelectValue placeholder="Choisir..." /></SelectTrigger>
                   <SelectContent>
                     {typeLieuOptions.map(o => <SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>)}
@@ -222,7 +239,7 @@ export default function ReglagesPage() {
             </div>
             <div className="space-y-1.5">
               <Label>Accessibilité</Label>
-              <Select defaultValue="centre_ville" onValueChange={v => setValue('accessibilite', v as 'centre_ville' | 'hors_centre_ville')}>
+              <Select value={watch('accessibilite')} onValueChange={v => setValue('accessibilite', v as 'centre_ville' | 'hors_centre_ville')}>
                 <SelectTrigger><SelectValue /></SelectTrigger>
                 <SelectContent>
                   <SelectItem value="centre_ville">Centre-ville</SelectItem>
@@ -243,7 +260,7 @@ export default function ReglagesPage() {
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-1.5">
                 <Label>Région</Label>
-                <Select defaultValue="Île-de-France" onValueChange={v => setValue('region', v as string)}>
+                <Select value={watch('region')} onValueChange={v => setValue('region', v as string)}>
                   <SelectTrigger><SelectValue /></SelectTrigger>
                   <SelectContent>
                     {REGIONS.map(r => <SelectItem key={r} value={r}>{r}</SelectItem>)}
@@ -261,7 +278,7 @@ export default function ReglagesPage() {
             </div>
             <div className="space-y-1.5">
               <Label>Zone de vacances scolaires</Label>
-              <Select defaultValue="C" onValueChange={v => setValue('zone_vacances', v as 'A' | 'B' | 'C')}>
+              <Select value={watch('zone_vacances')} onValueChange={v => setValue('zone_vacances', v as 'A' | 'B' | 'C')}>
                 <SelectTrigger><SelectValue /></SelectTrigger>
                 <SelectContent>
                   <SelectItem value="A">Zone A (Lyon, Bordeaux, Clermont-Fd…)</SelectItem>
@@ -282,7 +299,7 @@ export default function ReglagesPage() {
           <CardContent>
             <div className="space-y-1.5">
               <Label>Indice de densité de population</Label>
-              <Select defaultValue="1.0" onValueChange={v => setValue('idx_population', parseFloat(v as string))}>
+              <Select value={watch('idx_population')?.toFixed(1)} onValueChange={v => setValue('idx_population', parseFloat(v as string))}>
                 <SelectTrigger><SelectValue /></SelectTrigger>
                 <SelectContent>
                   {IDX_POP_OPTIONS.map(o => <SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>)}
@@ -375,6 +392,9 @@ export default function ReglagesPage() {
 
         {saved && (
           <p className="text-center text-sm text-emerald-500">Réglages enregistrés avec succès.</p>
+        )}
+        {saveError && (
+          <p className="text-center text-sm text-red-400">{saveError}</p>
         )}
       </form>
     </div>
