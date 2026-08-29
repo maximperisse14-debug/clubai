@@ -8,10 +8,6 @@ const PAGE_META: Record<string, { title: string; subtitle: string }> = {
   '/planifier':   { title: 'Planifier',            subtitle: 'Créer une soirée ou comparer 3 scénarios' },
   '/assistant':   { title: 'Assistant IA',         subtitle: 'Copilote de programmation' },
   '/dashboard':   { title: 'Dashboard',            subtitle: 'Vue d\'ensemble des performances' },
-  '/analyses':    { title: 'Analyses normalisées', subtitle: 'Classements à conditions équivalentes' },
-  '/predicteur':  { title: 'Prédicteur',           subtitle: 'Estimation fréquentation & CA' },
-  '/comparateur': { title: 'Comparateur',          subtitle: 'Comparer jusqu\'à 3 scénarios' },
-  '/calendrier':  { title: 'Calendrier',           subtitle: 'Planning et performances passées' },
   '/donnees':     { title: 'Données',              subtitle: 'Historique des soirées' },
   '/reglages':    { title: 'Réglages',             subtitle: 'Configuration du club' },
 }

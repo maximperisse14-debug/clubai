@@ -166,19 +166,6 @@ export default function DashboardPage() {
         </Card>
       </div>
 
-      {/* CTA Prédicteur HW */}
-      <div className="rounded-2xl p-5 flex items-center justify-between" style={{ background: 'var(--s1)', border: '1px solid var(--b1)' }}>
-        <div>
-          <div className="font-semibold text-sm" style={{ color: 'var(--t1)' }}>Projections Holt-Winters × Scoring</div>
-          <div className="text-xs mt-1" style={{ color: 'var(--t3)' }}>Courbe de prévision 6 mois + simulateur de soirée interactif</div>
-        </div>
-        <Link href="/predicteur">
-          <button className="px-4 py-2 rounded-xl text-sm font-semibold text-white whitespace-nowrap" style={{ background: 'var(--grad)', border: 'none', cursor: 'pointer' }}>
-            Ouvrir le prédicteur →
-          </button>
-        </Link>
-      </div>
-
       {/* Précision prédictive — full width */}
       <Card>
         <CardHeader className="pb-2">

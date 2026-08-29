@@ -1,7 +1,7 @@
 'use client'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { CalendarDays, PlusCircle, Bot, LayoutDashboard, BarChart3, Calculator, GitCompare, Calendar, Database, Settings } from 'lucide-react'
+import { CalendarDays, PlusCircle, Bot, LayoutDashboard, Database, Settings } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 const NAV = [
@@ -9,10 +9,6 @@ const NAV = [
   { href: '/planifier',   label: 'Planifier',   icon: PlusCircle },
   { href: '/assistant',   label: 'Assistant IA', icon: Bot },
   { href: '/dashboard',   label: 'Dashboard',   icon: LayoutDashboard },
-  { href: '/analyses',    label: 'Analyses',    icon: BarChart3 },
-  { href: '/predicteur',  label: 'Prédicteur',  icon: Calculator },
-  { href: '/comparateur', label: 'Comparateur', icon: GitCompare },
-  { href: '/calendrier',  label: 'Calendrier',  icon: Calendar },
   { href: '/donnees',     label: 'Données',     icon: Database },
   { href: '/reglages',    label: 'Réglages',    icon: Settings },
 ]
