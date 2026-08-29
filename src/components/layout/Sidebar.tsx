@@ -1,15 +1,16 @@
 'use client'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { CalendarDays, PlusCircle, Bot, Database, Settings } from 'lucide-react'
+import { CalendarDays, PlusCircle, Bot, Trophy, Database, Settings } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 const NAV = [
-  { href: '/planning',    label: 'Planning',    icon: CalendarDays },
-  { href: '/planifier',   label: 'Planifier',   icon: PlusCircle },
-  { href: '/assistant',   label: 'Assistant IA', icon: Bot },
-  { href: '/donnees',     label: 'Données',     icon: Database },
-  { href: '/reglages',    label: 'Réglages',    icon: Settings },
+  { href: '/planning',     label: 'Planning',     icon: CalendarDays },
+  { href: '/planifier',    label: 'Planifier',    icon: PlusCircle },
+  { href: '/assistant',    label: 'Assistant IA', icon: Bot },
+  { href: '/classements',  label: 'Classements',  icon: Trophy },
+  { href: '/donnees',      label: 'Données',      icon: Database },
+  { href: '/reglages',     label: 'Réglages',     icon: Settings },
 ]
 
 export default function Sidebar() {

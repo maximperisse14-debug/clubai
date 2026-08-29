@@ -84,6 +84,30 @@ const COEF_DJ_VERITE: Record<string, number> = {
   'Sans DJ':   0.75,
 }
 
+// Offres/promotions — coefficient de vérité distinct fréquentation/CA
+// (une offre gratuite gonfle la fréquentation mais dilue le panier moyen ;
+// une offre VIP fait l'inverse). ~40% des soirées reçoivent une offre.
+const OFFRES_CATALOGUE: Array<{ label: string; coefFreq: number; coefCA: number }> = [
+  { label: "Gratuit pour les filles toute la nuit",     coefFreq: 1.15, coefCA: 0.95 },
+  { label: "Gratuit avant 22h pour tout le monde",      coefFreq: 1.18, coefCA: 0.92 },
+  { label: "Gratuit avant 23h avec liste",              coefFreq: 1.12, coefCA: 0.95 },
+  { label: "Shot offert à l'entrée",                    coefFreq: 1.08, coefCA: 1.02 },
+  { label: "Shot offert avant 23h",                     coefFreq: 1.06, coefCA: 1.01 },
+  { label: "2 shots offerts sur présentation du flyer", coefFreq: 1.10, coefCA: 1.00 },
+  { label: "Open bar de 22h à 23h",                     coefFreq: 1.25, coefCA: 0.90 },
+  { label: "Open bar VIP 22h-minuit",                   coefFreq: 1.28, coefCA: 0.93 },
+  { label: "-50% sur présentation carte étudiante",     coefFreq: 1.14, coefCA: 0.85 },
+  { label: "Entrée gratuite étudiants avant 23h",       coefFreq: 1.16, coefCA: 0.90 },
+  { label: "Prévente à 5€ (10€ sur place)",             coefFreq: 1.05, coefCA: 1.03 },
+  { label: "Before gratuit avant 22h30",                coefFreq: 1.10, coefCA: 0.94 },
+  { label: "Accès VIP file rapide avec réservation",    coefFreq: 1.02, coefCA: 1.18 },
+]
+
+function choisirOffre(): { label: string; coefFreq: number; coefCA: number } | null {
+  if (Math.random() >= 0.4) return null
+  return OFFRES_CATALOGUE[Math.floor(Math.random() * OFFRES_CATALOGUE.length)]
+}
+
 // Qualité intrinsèque du type (indépendante du jour de programmation)
 const COEF_TYPE_VERITE: Record<string, number> = {
   'Étudiante':    1.30, // bon effet intrinsèque, mais programmé mer/jeu → brut bas
@@ -231,12 +255,15 @@ async function seed() {
       const coefType     = COEF_TYPE_VERITE[type] ?? 1.0
       const semaineISO   = getWeek(current, { weekStartsOn: 1 })
       const coefSaison   = COEF_SAISONNIER_HEBDO[Math.min(51, semaineISO - 1)]
+      const offre        = choisirOffre()
       const coef         = COEF_JOUR[jourSemaine] * coefSaison * COEF_METEO[meteo] * coefType * coefDJ
+      const coefFreqFinal = coef * (offre?.coefFreq ?? 1.0)
+      const coefCAFinal   = coef * (offre?.coefCA   ?? 1.0)
 
       const noise     = randn(1.0, 0.05)
-      const freq      = Math.min(Math.round(160 * coef * noise), CAPACITE)
-      const caBar     = Math.round(4250 * coef * noise)
-      const caEntrees = Math.round(750 * coef * noise)
+      const freq      = Math.min(Math.round(160 * coefFreqFinal * noise), CAPACITE)
+      const caBar     = Math.round(4250 * coefCAFinal * noise)
+      const caEntrees = Math.round(750 * coefCAFinal * noise)
       const caTotal   = caBar + caEntrees
       const panier    = freq > 0 ? +(caTotal / freq).toFixed(2) : 0
 
@@ -268,6 +295,7 @@ async function seed() {
         staff:              Math.max(2, Math.min(6, Math.round(freq / 60) + 2)),
         heure_ouverture:    '22:00', heure_fermeture: '05:00',
         canal_acquisition:  pickWeighted({ 'Instagram':38,'Bouche-à-oreille':27,'Email/SMS':17,'Affichage':10,'Partenariat étudiant':8 }),
+        promotion: offre?.label ?? null, // offre_categorie calculée automatiquement par le trigger v10
         prediction_freq: predFreq, prediction_ca: predCA,
         prediction_score_global: predScore,
         prediction_calculee_le:  new Date(current).toISOString(),
