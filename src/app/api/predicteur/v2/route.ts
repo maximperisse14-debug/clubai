@@ -1,19 +1,26 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createServerClient } from '@supabase/ssr'
 import { cookies } from 'next/headers'
+import { z } from 'zod'
 import { calculerPredictionComplete, type ClubSettings } from '@/lib/predicteur/scoring-engine'
+
+const bodySchema = z.object({
+  date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Format attendu: YYYY-MM-DD'),
+  typeEvenement: z.string().min(1),
+  nomEvenement: z.string().optional(),
+  djId: z.string().nullable().optional(),
+  djNom: z.string().nullable().optional(),
+  prevStandard: z.number().positive().optional(),
+  prevStandardCA: z.number().positive().optional(),
+})
 
 export async function POST(req: NextRequest) {
   try {
-    const body = await req.json() as {
-      date: string
-      typeEvenement: string
-      nomEvenement?: string
-      djId?: string | null
-      djNom?: string | null
-      prevStandard?: number
-      prevStandardCA?: number
+    const parsed = bodySchema.safeParse(await req.json())
+    if (!parsed.success) {
+      return NextResponse.json({ error: 'Requête invalide' }, { status: 400 })
     }
+    const body = parsed.data
 
     const cookieStore = await cookies()
     const supabase = createServerClient(

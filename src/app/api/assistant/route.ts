@@ -1,6 +1,8 @@
 import Anthropic from '@anthropic-ai/sdk'
 import { NextResponse } from 'next/server'
+import { z } from 'zod'
 import { createClient } from '@/lib/supabase/server'
+import { rateLimit } from '@/lib/rate-limit'
 import { TOOL_DEFINITIONS } from '@/lib/assistant/tool-definitions'
 import { buildSystemPrompt } from '@/lib/assistant/system-prompt'
 import {
@@ -15,15 +17,28 @@ import { fr } from 'date-fns/locale'
 
 const anthropic = new Anthropic()
 
+const bodySchema = z.object({
+  messages: z.array(z.object({
+    role: z.enum(['user', 'assistant']),
+    content: z.string(),
+  })).min(1).max(50),
+})
+
 export async function POST(req: Request) {
   try {
-    const { messages } = await req.json() as {
-      messages: { role: 'user' | 'assistant'; content: string }[]
+    const parsed = bodySchema.safeParse(await req.json())
+    if (!parsed.success) {
+      return NextResponse.json({ error: 'Requête invalide' }, { status: 400 })
     }
+    const { messages } = parsed.data
 
     const supabase = await createClient()
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+
+    if (!rateLimit(`assistant:${user.id}`, 15, 10 * 60 * 1000)) {
+      return NextResponse.json({ error: 'Trop de requêtes, réessaie dans quelques minutes.' }, { status: 429 })
+    }
 
     const { data: club } = await supabase
       .from('clubs')
@@ -117,9 +132,6 @@ export async function POST(req: Request) {
 
   } catch (err) {
     console.error('[assistant]', err)
-    return NextResponse.json(
-      { error: err instanceof Error ? err.message : 'Erreur interne' },
-      { status: 500 }
-    )
+    return NextResponse.json({ error: 'Erreur interne' }, { status: 500 })
   }
 }
