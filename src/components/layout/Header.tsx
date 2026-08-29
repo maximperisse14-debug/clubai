@@ -7,7 +7,6 @@ const PAGE_META: Record<string, { title: string; subtitle: string }> = {
   '/planning':    { title: 'Planning',             subtitle: 'Soirées planifiées & prévisions' },
   '/planifier':   { title: 'Planifier',            subtitle: 'Créer une soirée ou comparer 3 scénarios' },
   '/assistant':   { title: 'Assistant IA',         subtitle: 'Copilote de programmation' },
-  '/dashboard':   { title: 'Dashboard',            subtitle: 'Vue d\'ensemble des performances' },
   '/donnees':     { title: 'Données',              subtitle: 'Historique des soirées' },
   '/reglages':    { title: 'Réglages',             subtitle: 'Configuration du club' },
 }
