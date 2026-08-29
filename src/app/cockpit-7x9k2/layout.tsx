@@ -14,7 +14,7 @@ export default async function CockpitLayout({ children }: { children: React.Reac
     .single()
 
   if (profile?.role !== 'admin') {
-    redirect('/dashboard')
+    redirect('/planning')
   }
 
   return (

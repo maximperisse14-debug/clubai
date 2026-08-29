@@ -7,24 +7,7 @@ import CelluleModal from '@/components/calendrier/CelluleModal'
 import { useClub } from '@/hooks/useClub'
 import { useSoirees } from '@/hooks/useSoirees'
 import { useDJs } from '@/hooks/useDJs'
-import { useQuery } from '@tanstack/react-query'
-import { createClient } from '@/lib/supabase/client'
-
-function useClubSettings(clubId?: string) {
-  const supabase = createClient()
-  return useQuery({
-    queryKey: ['club_settings', clubId],
-    queryFn: async () => {
-      const { data } = await supabase
-        .from('club_settings')
-        .select('jours_ouverture, ouverture_veilles_feries')
-        .eq('club_id', clubId!)
-        .single()
-      return data
-    },
-    enabled: !!clubId,
-  })
-}
+import { useClubSettings } from '@/hooks/useClubSettings'
 
 export default function CalendrierPage() {
   const { data: club } = useClub()

@@ -10,6 +10,8 @@ import { Button } from '@/components/ui/button'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { createBrowserClient } from '@supabase/ssr'
 import JoursOuvertureSection from '@/components/reglages/JoursOuvertureSection'
+import AlertesSection from '@/components/reglages/AlertesSection'
+import HorairesSection, { type HorairePreset } from '@/components/reglages/HorairesSection'
 
 const REGIONS = [
   'Auvergne-Rhône-Alpes','Bourgogne-Franche-Comté','Bretagne','Centre-Val de Loire',
@@ -69,6 +71,8 @@ export default function ReglagesPage() {
   const [saving, setSaving] = useState(false)
   const [saved, setSaved] = useState(false)
   const [joursOuverture, setJoursOuverture] = useState<string[]>([])
+  const [seuilAlerte, setSeuilAlerte] = useState(10)
+  const [horairesPreferentiels, setHorairesPreferentiels] = useState<HorairePreset[]>([])
 
   const { register, handleSubmit, setValue, watch, formState: { errors } } = useForm<FormData>({
     resolver: zodResolver(schema) as any,
@@ -120,6 +124,8 @@ export default function ReglagesPage() {
       setValue('ville',              s.ville ?? '')
       setValue('adresse',            s.adresse ?? '')
       if (s.jours_ouverture) setJoursOuverture(s.jours_ouverture)
+      if (s.seuil_alerte_variation != null) setSeuilAlerte(s.seuil_alerte_variation)
+      if (s.horaires_preferentiels) setHorairesPreferentiels(s.horaires_preferentiels)
       setValue('zone_vacances',      s.zone_vacances ?? 'C')
       setValue('idx_population',     Number(s.idx_population))
       setValue('pct_etudiants',      s.pct_etudiants)
@@ -164,6 +170,8 @@ export default function ReglagesPage() {
         pct_adultes:        data.pct_adultes,
         panier_base:        data.panier_base,
         jours_ouverture:    joursOuverture,
+        seuil_alerte_variation: seuilAlerte,
+        horaires_preferentiels: horairesPreferentiels,
         updated_at:         new Date().toISOString(),
       }, { onConflict: 'club_id' })
 
@@ -338,6 +346,26 @@ export default function ReglagesPage() {
           </CardHeader>
           <CardContent>
             <JoursOuvertureSection value={joursOuverture} onChange={setJoursOuverture} />
+          </CardContent>
+        </Card>
+
+        {/* Horaires préférentiels */}
+        <Card>
+          <CardHeader className="pb-3">
+            <CardTitle className="text-sm">Horaires</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <HorairesSection value={horairesPreferentiels} onChange={setHorairesPreferentiels} />
+          </CardContent>
+        </Card>
+
+        {/* Alertes */}
+        <Card>
+          <CardHeader className="pb-3">
+            <CardTitle className="text-sm">Alertes</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <AlertesSection value={seuilAlerte} onChange={setSeuilAlerte} />
           </CardContent>
         </Card>
 

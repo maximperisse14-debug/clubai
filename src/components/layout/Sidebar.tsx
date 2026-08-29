@@ -1,10 +1,13 @@
 'use client'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { LayoutDashboard, BarChart3, Calculator, GitCompare, Calendar, Database, Settings } from 'lucide-react'
+import { CalendarDays, PlusCircle, Bot, LayoutDashboard, BarChart3, Calculator, GitCompare, Calendar, Database, Settings } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 const NAV = [
+  { href: '/planning',    label: 'Planning',    icon: CalendarDays },
+  { href: '/planifier',   label: 'Planifier',   icon: PlusCircle },
+  { href: '/assistant',   label: 'Assistant IA', icon: Bot },
   { href: '/dashboard',   label: 'Dashboard',   icon: LayoutDashboard },
   { href: '/analyses',    label: 'Analyses',    icon: BarChart3 },
   { href: '/predicteur',  label: 'Prédicteur',  icon: Calculator },

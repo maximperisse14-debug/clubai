@@ -4,6 +4,9 @@ import { LogOut } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 
 const PAGE_META: Record<string, { title: string; subtitle: string }> = {
+  '/planning':    { title: 'Planning',             subtitle: 'Soirées planifiées & prévisions' },
+  '/planifier':   { title: 'Planifier',            subtitle: 'Créer une soirée ou comparer 3 scénarios' },
+  '/assistant':   { title: 'Assistant IA',         subtitle: 'Copilote de programmation' },
   '/dashboard':   { title: 'Dashboard',            subtitle: 'Vue d\'ensemble des performances' },
   '/analyses':    { title: 'Analyses normalisées', subtitle: 'Classements à conditions équivalentes' },
   '/predicteur':  { title: 'Prédicteur',           subtitle: 'Estimation fréquentation & CA' },
