@@ -17,21 +17,23 @@ const anthropic = new Anthropic()
 
 export async function POST(req: Request) {
   try {
-    const { messages, clubId } = await req.json() as {
+    const { messages } = await req.json() as {
       messages: { role: 'user' | 'assistant'; content: string }[]
-      clubId: string
-    }
-
-    if (!clubId) {
-      return NextResponse.json({ error: 'clubId manquant' }, { status: 400 })
     }
 
     const supabase = await createClient()
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+
     const { data: club } = await supabase
       .from('clubs')
-      .select('nom')
-      .eq('id', clubId)
+      .select('id, nom')
+      .eq('owner_id', user.id)
       .single()
+
+    if (!club) return NextResponse.json({ error: 'Club introuvable' }, { status: 404 })
+
+    const clubId = club.id
 
     const systemPrompt = buildSystemPrompt(
       club?.nom ?? 'votre club',
