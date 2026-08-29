@@ -252,6 +252,17 @@ const FH_REF: Record<string, number> = {
   '12_3': 187, '12_4': 239, '12_5': 281, '12_6': 306,
 }
 
+// Le modèle HW a été entraîné quand le club n'ouvrait que mer/jeu/ven/sam :
+// FREQ_REF/CA_REF n'ont donc aucune entrée pour dim/lun/mar. Si un club ouvre
+// désormais un de ces jours (cf. réglages "jours d'ouverture"), on extrapole
+// depuis le mercredi du même mois avec le même ratio d'attractivité relative
+// que celui déjà utilisé pour le score calendrier (SCORE_JOUR).
+const RATIO_VS_MERCREDI: Record<number, number> = {
+  0: 20 / 15, // Dimanche
+  1: 5 / 15,  // Lundi
+  2: 8 / 15,  // Mardi
+}
+
 export function getHWForecastForDate(date: Date): {
   freq: number; ca: number
   freqLow: number; freqHigh: number
@@ -274,21 +285,40 @@ export function getHWForecastForDate(date: Date): {
   const mois = getMonth(date) + 1  // 1-12
   const key  = `${mois}_${wd}`
 
-  const freq = FREQ_REF[key]
-  const ca   = CA_REF[key]
+  let freq = FREQ_REF[key]
+  let ca   = CA_REF[key]
+  let fl   = FL_REF[key]
+  let fh   = FH_REF[key]
+  let icElargi = false
 
-  if (!freq) return { freq: 0, ca: 0, freqLow: 0, freqHigh: 0, caLow: 0, caHigh: 0 }
+  // 3. Jour non couvert par le modèle (dim/lun/mar) — extrapolation depuis le mercredi
+  if (!freq) {
+    const ratio = RATIO_VS_MERCREDI[wd]
+    const keyMer = `${mois}_3`
+    const freqMer = FREQ_REF[keyMer]
+    if (!ratio || !freqMer) return { freq: 0, ca: 0, freqLow: 0, freqHigh: 0, caLow: 0, caHigh: 0 }
+
+    freq = freqMer * ratio
+    ca   = (CA_REF[keyMer] ?? 0) * ratio
+    fl   = (FL_REF[keyMer] ?? freqMer * 0.85) * ratio
+    fh   = (FH_REF[keyMer] ?? freqMer * 1.15) * ratio
+    icElargi = true
+  }
 
   // Légère tendance annuelle (+1.5%/an depuis Jour J)
   const anneesDepuisJourJ = differenceInDays(date, new Date(JOUR_J)) / 365
   const tendance = Math.pow(1.015, Math.max(0, anneesDepuisJourJ))
 
+  // Incertitude élargie (±20% au lieu de ±13-15%) pour un jour extrapolé
+  // sans historique réel propre
+  const margeCA = icElargi ? 0.20 : 0.13
+
   return {
     freq:     Math.round(freq * tendance),
     ca:       Math.round(ca   * tendance),
-    freqLow:  Math.round((FL_REF[key] ?? freq * 0.85) * tendance),
-    freqHigh: Math.round((FH_REF[key] ?? freq * 1.15) * tendance),
-    caLow:    Math.round(ca * 0.87 * tendance),
-    caHigh:   Math.round(ca * 1.13 * tendance),
+    freqLow:  Math.round((fl ?? freq * 0.85) * (icElargi ? 0.9 : 1) * tendance),
+    freqHigh: Math.round((fh ?? freq * 1.15) * (icElargi ? 1.1 : 1) * tendance),
+    caLow:    Math.round(ca * (1 - margeCA) * tendance),
+    caHigh:   Math.round(ca * (1 + margeCA) * tendance),
   }
 }
