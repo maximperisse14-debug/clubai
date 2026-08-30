@@ -1,5 +1,6 @@
 'use client'
 import { useQuery } from '@tanstack/react-query'
+import { AlertCircle } from 'lucide-react'
 import { useClub } from '@/hooks/useClub'
 import { getClassement } from '@/lib/classements/normalisation'
 import ColonneClassement from '@/components/classements/ColonneClassement'
@@ -7,21 +8,23 @@ import ColonneClassement from '@/components/classements/ColonneClassement'
 export default function ClassementsPage() {
   const { data: club } = useClub()
 
-  const { data: themes, isLoading: themesLoading } = useQuery({
+  const { data: themes, isLoading: themesLoading, error: themesError } = useQuery({
     queryKey: ['classement', club?.id, 'type'],
     queryFn: () => getClassement(club!.id, 'type'),
     enabled: !!club?.id,
   })
-  const { data: djs, isLoading: djsLoading } = useQuery({
+  const { data: djs, isLoading: djsLoading, error: djsError } = useQuery({
     queryKey: ['classement', club?.id, 'dj'],
     queryFn: () => getClassement(club!.id, 'dj'),
     enabled: !!club?.id,
   })
-  const { data: offres, isLoading: offresLoading } = useQuery({
+  const { data: offres, isLoading: offresLoading, error: offresError } = useQuery({
     queryKey: ['classement', club?.id, 'offre'],
     queryFn: () => getClassement(club!.id, 'offre'),
     enabled: !!club?.id,
   })
+
+  const anyError = themesError ?? djsError ?? offresError
 
   return (
     <div style={{
@@ -43,6 +46,24 @@ export default function ClassementsPage() {
           Impacts normalisés — indépendants du biais de programmation
         </div>
       </div>
+
+      {/* Erreur de chargement */}
+      {anyError && (
+        <div style={{
+          display: 'flex', alignItems: 'flex-start', gap: 10,
+          borderRadius: 12, border: '1px solid rgba(240,149,149,0.3)',
+          background: 'rgba(240,149,149,0.1)', padding: '12px 16px',
+          marginBottom: 20, fontSize: 13, color: '#f09595',
+        }}>
+          <AlertCircle size={16} style={{ marginTop: 2, flexShrink: 0 }} />
+          <div>
+            <div style={{ fontWeight: 600 }}>Erreur de chargement</div>
+            <div style={{ fontSize: 12, marginTop: 2, opacity: 0.85 }}>
+              {anyError instanceof Error ? anyError.message : String(anyError)}
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Note explicative */}
       <div style={{

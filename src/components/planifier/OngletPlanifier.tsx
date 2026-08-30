@@ -1,6 +1,7 @@
 'use client'
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
+import { useQueryClient } from '@tanstack/react-query'
 import { format, getDay } from 'date-fns'
 import { fr } from 'date-fns/locale'
 import { createClient } from '@/lib/supabase/client'
@@ -57,6 +58,7 @@ const CARD_STYLE = {
 
 export default function OngletPlanifier() {
   const router = useRouter()
+  const queryClient = useQueryClient()
   const { data: club } = useClub()
   const { data: settings } = useClubSettings(club?.id)
   const { data: djs } = useDJs(club?.id)
@@ -183,6 +185,7 @@ export default function OngletPlanifier() {
       return
     }
 
+    await queryClient.invalidateQueries({ queryKey: ['planning'] })
     router.push('/planning')
   }
 

@@ -2,6 +2,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { format, getDay } from 'date-fns'
 import { useRouter } from 'next/navigation'
+import { useQueryClient } from '@tanstack/react-query'
 import { createClient } from '@/lib/supabase/client'
 import { useClub } from '@/hooks/useClub'
 import { useClubSettings } from '@/hooks/useClubSettings'
@@ -38,6 +39,7 @@ const LABELS_SCENARIO = ['Test 1', 'Test 2', 'Test 3']
 
 export default function OngletTester() {
   const router = useRouter()
+  const queryClient = useQueryClient()
   const { data: club } = useClub()
   const { data: settings } = useClubSettings(club?.id)
   const { data: djs } = useDJs(club?.id)
@@ -136,6 +138,7 @@ export default function OngletTester() {
       return
     }
 
+    await queryClient.invalidateQueries({ queryKey: ['planning'] })
     router.push('/planning')
   }
 

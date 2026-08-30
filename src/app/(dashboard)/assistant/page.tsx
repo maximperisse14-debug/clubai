@@ -383,7 +383,7 @@ export default function AssistantPage() {
             →
           </button>
         </div>
-        <div style={{ maxWidth: 760, margin: '8px auto 0', fontSize: 11, color: 'rgba(240,240,248,0.2)', textAlign: 'center' }}>
+        <div style={{ maxWidth: 760, margin: '8px auto 0', fontSize: 11, color: 'var(--t3)', textAlign: 'center' }}>
           L&apos;assistant n&apos;a pas accès aux résultats réels — toutes les prévisions passent par le moteur ClubAI
         </div>
       </div>

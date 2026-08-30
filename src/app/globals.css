@@ -67,8 +67,8 @@
   --b2: rgba(255,255,255,0.13);
   /* Textes */
   --t1: #f0f0f8;
-  --t2: rgba(240,240,248,0.48);
-  --t3: rgba(240,240,248,0.22);
+  --t2: rgba(240,240,248,0.55);
+  --t3: rgba(240,240,248,0.5);
 
   /* shadcn / Tailwind overrides */
   --background: #0d0d14;

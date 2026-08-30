@@ -1,5 +1,5 @@
 'use client'
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, use } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { format, startOfMonth, endOfMonth, eachDayOfInterval, addMonths, subMonths, getDay } from 'date-fns'
 import { fr } from 'date-fns/locale'
@@ -41,7 +41,8 @@ const CELL_CLASS: Record<string, string> = {
 
 const JOURS_SEMAINE = ['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim']
 
-export default function CockpitConcurrenceCalendrier({ params }: { params: { clubId: string } }) {
+export default function CockpitConcurrenceCalendrier({ params }: { params: Promise<{ clubId: string }> }) {
+  const { clubId } = use(params)
   const [currentMonth, setCurrentMonth] = useState(new Date())
   const [data, setData]             = useState<Record<string, JourConcurrence>>({})
   const [selectedDay, setSelectedDay] = useState<Date | null>(null)
@@ -53,18 +54,18 @@ export default function CockpitConcurrenceCalendrier({ params }: { params: { clu
     const { data: rows } = await supabase
       .from('concurrence_calendrier')
       .select('*')
-      .eq('club_id', params.clubId)
+      .eq('club_id', clubId)
       .gte('date', start)
       .lte('date', end)
     const map: Record<string, JourConcurrence> = {}
     rows?.forEach(r => { map[r.date] = r as JourConcurrence })
     setData(map)
-  }, [currentMonth, params.clubId])
+  }, [currentMonth, clubId])
 
   useEffect(() => {
-    supabase.from('clubs').select('nom').eq('id', params.clubId).single()
+    supabase.from('clubs').select('nom').eq('id', clubId).single()
       .then(({ data: club }) => { if (club) setClubNom(club.nom) })
-  }, [params.clubId])
+  }, [clubId])
 
   useEffect(() => { loadMonth() }, [loadMonth])
 
@@ -78,7 +79,7 @@ export default function CockpitConcurrenceCalendrier({ params }: { params: { clu
     <div className="p-6 max-w-5xl mx-auto">
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h1 className="text-xl font-semibold text-white">{clubNom || params.clubId}</h1>
+          <h1 className="text-xl font-semibold text-white">{clubNom || clubId}</h1>
           <p className="text-zinc-400 text-sm">Calendrier des coefficients de concurrence</p>
         </div>
         <div className="flex items-center gap-2">
@@ -130,7 +131,7 @@ export default function CockpitConcurrenceCalendrier({ params }: { params: { clu
 
       {selectedDay && (
         <JourEditDialog
-          clubId={params.clubId}
+          clubId={clubId}
           date={selectedDay}
           existing={data[format(selectedDay, 'yyyy-MM-dd')]}
           onClose={() => setSelectedDay(null)}

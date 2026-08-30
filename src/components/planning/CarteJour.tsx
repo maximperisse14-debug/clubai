@@ -91,9 +91,15 @@ export default function CarteJour({ jour, mode, estAujourdhui }: Props) {
   // Carte avec soirée planifiée
   return (
     <>
-      <div
+      <button
+        type="button"
         onClick={() => setModalOuvert(true)}
         style={{
+          display: 'block',
+          width: '100%',
+          textAlign: 'left',
+          font: 'inherit',
+          color: 'inherit',
           borderRadius: radius,
           background: 'linear-gradient(135deg, rgba(13,13,20,0.95), rgba(13,13,20,0.85))',
           border: `1.5px solid ${accent!.color}40`,
@@ -106,12 +112,20 @@ export default function CarteJour({ jour, mode, estAujourdhui }: Props) {
           overflow: 'hidden',
         }}
         onMouseEnter={e => {
-          (e.currentTarget as HTMLDivElement).style.boxShadow = `0 0 32px ${accent!.glow}, 0 0 0 1px ${accent!.color}60, inset 0 1px 0 rgba(255,255,255,0.08)`
-          ;(e.currentTarget as HTMLDivElement).style.transform = 'translateY(-1px)'
+          (e.currentTarget as HTMLButtonElement).style.boxShadow = `0 0 32px ${accent!.glow}, 0 0 0 1px ${accent!.color}60, inset 0 1px 0 rgba(255,255,255,0.08)`
+          ;(e.currentTarget as HTMLButtonElement).style.transform = 'translateY(-1px)'
         }}
         onMouseLeave={e => {
-          (e.currentTarget as HTMLDivElement).style.boxShadow = `0 0 20px ${accent!.glow}, inset 0 1px 0 rgba(255,255,255,0.06)`
-          ;(e.currentTarget as HTMLDivElement).style.transform = 'translateY(0)'
+          (e.currentTarget as HTMLButtonElement).style.boxShadow = `0 0 20px ${accent!.glow}, inset 0 1px 0 rgba(255,255,255,0.06)`
+          ;(e.currentTarget as HTMLButtonElement).style.transform = 'translateY(0)'
+        }}
+        onFocus={e => {
+          (e.currentTarget as HTMLButtonElement).style.boxShadow = `0 0 32px ${accent!.glow}, 0 0 0 2px ${accent!.color}, inset 0 1px 0 rgba(255,255,255,0.08)`
+          ;(e.currentTarget as HTMLButtonElement).style.transform = 'translateY(-1px)'
+        }}
+        onBlur={e => {
+          (e.currentTarget as HTMLButtonElement).style.boxShadow = `0 0 20px ${accent!.glow}, inset 0 1px 0 rgba(255,255,255,0.06)`
+          ;(e.currentTarget as HTMLButtonElement).style.transform = 'translateY(0)'
         }}
       >
         {/* Barre colorée en haut */}
@@ -197,7 +211,7 @@ export default function CarteJour({ jour, mode, estAujourdhui }: Props) {
             {soiree!.variationFreq24h > 0 ? '▲' : '▼'} {Math.abs(soiree!.variationFreq24h).toFixed(0)}%
           </div>
         )}
-      </div>
+      </button>
 
       {modalOuvert && soiree && (
         <ModalDetailSoiree

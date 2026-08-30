@@ -63,21 +63,30 @@ export default function ColonneClassement({ titre, emoji, lignes, dimension, loa
               const accent = dimension === 'type' ? getTypeAccent(ligne.valeur) : null
 
               return (
-                <div
+                <button
                   key={ligne.valeur}
+                  type="button"
                   onClick={() => setSelection(ligne)}
                   style={{
                     display: 'flex',
+                    width: '100%',
                     alignItems: 'center',
+                    textAlign: 'left',
+                    font: 'inherit',
+                    color: 'inherit',
+                    border: 'none',
                     gap: 14,
                     padding: '12px 22px',
                     cursor: 'pointer',
                     borderBottom: idx < lignes.length - 1 ? '1px solid rgba(255,255,255,0.04)' : 'none',
                     transition: 'background 0.15s',
                     position: 'relative',
+                    background: 'transparent',
                   }}
                   onMouseEnter={e => (e.currentTarget.style.background = 'rgba(255,255,255,0.03)')}
                   onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
+                  onFocus={e => (e.currentTarget.style.background = 'rgba(255,255,255,0.05)')}
+                  onBlur={e => (e.currentTarget.style.background = 'transparent')}
                 >
                   {/* Numéro */}
                   <div style={{
@@ -130,7 +139,7 @@ export default function ColonneClassement({ titre, emoji, lignes, dimension, loa
 
                   {/* Flèche détail */}
                   <div style={{ fontSize: 11, color: 'rgba(240,240,248,0.2)', flexShrink: 0 }}>›</div>
-                </div>
+                </button>
               )
             })
           )}

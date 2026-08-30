@@ -2,7 +2,7 @@
 import { useState } from 'react'
 import { addWeeks, subWeeks, addMonths, subMonths, startOfWeek, format } from 'date-fns'
 import { fr } from 'date-fns/locale'
-import { ChevronLeft, ChevronRight } from 'lucide-react'
+import { ChevronLeft, ChevronRight, AlertCircle } from 'lucide-react'
 import { usePlanning } from '@/hooks/usePlanning'
 import { useClub } from '@/hooks/useClub'
 import { useClubSettings } from '@/hooks/useClubSettings'
@@ -16,7 +16,7 @@ export default function PlanningPage() {
   const [dateRef, setDateRef] = useState(new Date())
   const { data: club } = useClub()
   const { data: settings } = useClubSettings(club?.id)
-  const { data: jours, isLoading } = usePlanning(mode, dateRef, club?.id)
+  const { data: jours, isLoading, error } = usePlanning(mode, dateRef, club?.id)
 
   const seuilAlerte = settings?.seuil_alerte_variation ?? 10
   const today = format(new Date(), 'yyyy-MM-dd')
@@ -87,6 +87,24 @@ export default function PlanningPage() {
           <ChevronRight size={16} />
         </button>
       </div>
+
+      {/* Erreur de chargement */}
+      {error && (
+        <div style={{
+          display: 'flex', alignItems: 'flex-start', gap: 10,
+          borderRadius: 12, border: '1px solid rgba(240,149,149,0.3)',
+          background: 'rgba(240,149,149,0.1)', padding: '12px 16px',
+          marginBottom: 20, fontSize: 13, color: '#f09595',
+        }}>
+          <AlertCircle size={16} style={{ marginTop: 2, flexShrink: 0 }} />
+          <div>
+            <div style={{ fontWeight: 600 }}>Erreur de chargement</div>
+            <div style={{ fontSize: 12, marginTop: 2, opacity: 0.85 }}>
+              {error instanceof Error ? error.message : String(error)}
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Bande KPIs hebdomadaires (vue semaine uniquement) */}
       {mode === 'semaine' && jours && (
