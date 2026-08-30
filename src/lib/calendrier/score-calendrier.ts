@@ -1,6 +1,7 @@
 // eslint-disable-next-line @typescript-eslint/no-require-imports
 const getJoursFeries = require('@socialgouv/jours-feries') as (year: number) => Record<string, Date>
 
+import { format } from 'date-fns'
 import {
   estEnVacances,
   estPremiereSemainePostVacances,
@@ -41,7 +42,7 @@ function getSemaineDuMois(date: Date): keyof typeof BONUS_SEMAINE_MOIS {
 }
 
 function toYMD(d: Date): string {
-  return d.toISOString().split('T')[0]
+  return format(d, 'yyyy-MM-dd')
 }
 
 function estJourFerie(date: Date): boolean {

@@ -2,6 +2,8 @@
 // Source : https://www.education.gouv.fr/calendrier-scolaire
 // À mettre à jour chaque année ou remplacer par un fetch de l'API gouvernementale.
 
+import { format } from 'date-fns'
+
 type Zone = 'A' | 'B' | 'C'
 
 interface Periode {
@@ -35,7 +37,7 @@ const PERIODES: Periode[] = [
 ]
 
 function toYMD(date: Date): string {
-  return date.toISOString().split('T')[0]
+  return format(date, 'yyyy-MM-dd')
 }
 
 export function estEnVacances(date: Date, zone: Zone): boolean {

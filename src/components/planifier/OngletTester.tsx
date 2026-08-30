@@ -50,6 +50,7 @@ export default function OngletTester() {
     { ...SCENARIO_INIT },
   ])
   const [saving, setSaving] = useState<number | null>(null)
+  const [erreurPlanification, setErreurPlanification] = useState('')
 
   const joursOuverture = joursOuvertureVersGetDay(
     settings?.jours_ouverture ?? ['Mercredi', 'Jeudi', 'Vendredi', 'Samedi']
@@ -108,7 +109,8 @@ export default function OngletTester() {
     const s = scenarios[idx]
     if (!date || !s.typeEv || !club?.id || !s.freq || !s.ca) return
     setSaving(idx)
-    await supabase.from('soirees').insert({
+    setErreurPlanification('')
+    const { error } = await supabase.from('soirees').insert({
       club_id: club.id,
       date: format(date, 'yyyy-MM-dd'),
       jour: GETDAY_TO_JOUR_NOM[getDay(date)],
@@ -119,6 +121,13 @@ export default function OngletTester() {
       prediction_ca: s.ca,
     })
     setSaving(null)
+
+    if (error) {
+      console.error('[tester] insert soiree', error)
+      setErreurPlanification(`${LABELS_SCENARIO[idx]} n'a pas pu être planifié : ${error.message}`)
+      return
+    }
+
     router.push('/planning')
   }
 
@@ -281,6 +290,12 @@ export default function OngletTester() {
           )
         })}
       </div>
+
+      {erreurPlanification && (
+        <div style={{ fontSize: 12, color: '#f09595', textAlign: 'center', marginBottom: 20, maxWidth: 700 }}>
+          {erreurPlanification}
+        </div>
+      )}
 
       {/* Classement synthèse */}
       {scenariosAvecFreq.length > 1 && (

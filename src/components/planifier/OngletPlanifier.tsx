@@ -89,6 +89,7 @@ export default function OngletPlanifier() {
   const [loading, setLoading] = useState(false)
   const [erreur, setErreur] = useState('')
   const [saving, setSaving] = useState(false)
+  const [erreurPlanification, setErreurPlanification] = useState('')
 
   const typeFinal = typeEv === '__libre__' ? typeLibre : typeEv
   const accent = typeFinal ? getTypeAccent(typeFinal) : null
@@ -135,18 +136,25 @@ export default function OngletPlanifier() {
   async function handlePlanifier() {
     if (!date || !typeFinal || !club?.id || !freq || !ca) return
     setSaving(true)
+    setErreurPlanification('')
 
     let djIdFinal = djId || null
     if (djMode === 'nouveau' && djNom.trim()) {
-      const { data: newDj } = await supabase
+      const { data: newDj, error: djError } = await supabase
         .from('djs')
         .insert({ club_id: club.id, nom: djNom.trim(), cout_base: 200, actif: true })
         .select()
         .single()
+      if (djError) {
+        console.error('[planifier] insert dj', djError)
+        setErreurPlanification(`Impossible de créer le DJ : ${djError.message}`)
+        setSaving(false)
+        return
+      }
       djIdFinal = newDj?.id ?? null
     }
 
-    await supabase.from('soirees').insert({
+    const { error: soireeError } = await supabase.from('soirees').insert({
       club_id: club.id,
       date: format(date, 'yyyy-MM-dd'),
       jour: GETDAY_TO_JOUR_NOM[getDay(date)],
@@ -162,6 +170,13 @@ export default function OngletPlanifier() {
     })
 
     setSaving(false)
+
+    if (soireeError) {
+      console.error('[planifier] insert soiree', soireeError)
+      setErreurPlanification(`La soirée n'a pas pu être planifiée : ${soireeError.message}`)
+      return
+    }
+
     router.push('/planning')
   }
 
@@ -513,6 +528,12 @@ export default function OngletPlanifier() {
         >
           {saving ? 'Planification...' : '✦ Planifier cette soirée'}
         </button>
+
+        {erreurPlanification && (
+          <div style={{ fontSize: 12, color: '#f09595', textAlign: 'center', marginTop: -8 }}>
+            {erreurPlanification}
+          </div>
+        )}
 
         {!peutPlanifier && (
           <div style={{ fontSize: 11, color: 'rgba(240,240,248,0.25)', textAlign: 'center', marginTop: -8 }}>
