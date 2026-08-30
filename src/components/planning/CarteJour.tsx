@@ -1,5 +1,6 @@
 'use client'
 import { useState } from 'react'
+import { Users, Euro, Headphones } from 'lucide-react'
 import { getTypeAccent } from '@/lib/planning/type-couleurs'
 import type { JourPlanning } from '@/hooks/usePlanning'
 import ModalDetailSoiree from './ModalDetailSoiree'
@@ -14,6 +15,7 @@ export default function CarteJour({ jour, mode, estAujourdhui }: Props) {
   const [modalOuvert, setModalOuvert] = useState(false)
   const { soiree, previsionStandard, estOuvert, label } = jour
   const accent = soiree ? getTypeAccent(soiree.typeEvenement) : null
+  const AccentIcon = accent?.icon
   const isMois = mode === 'mois'
   const radius = isMois ? 12 : 18
 
@@ -58,14 +60,14 @@ export default function CarteJour({ jour, mode, estAujourdhui }: Props) {
         {previsionStandard && !isMois && (
           <div style={{ marginTop: 14 }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
-              <span style={{ fontSize: 18 }}>👥</span>
+              <Users size={18} style={{ color: 'rgba(79,163,232,0.8)' }} />
               <span style={{ fontSize: 20, fontWeight: 800, color: 'rgba(79,163,232,0.8)' }}>
                 {previsionStandard.freq}
               </span>
               <span style={{ fontSize: 12, color: 'rgba(240,240,248,0.3)' }}>pers.</span>
             </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-              <span style={{ fontSize: 18 }}>💶</span>
+              <Euro size={18} style={{ color: 'rgba(123,92,229,0.8)' }} />
               <span style={{ fontSize: 20, fontWeight: 800, color: 'rgba(123,92,229,0.8)' }}>
                 {(previsionStandard.ca / 1000).toFixed(1)}k
               </span>
@@ -145,7 +147,7 @@ export default function CarteJour({ jour, mode, estAujourdhui }: Props) {
               </span>
             )}
           </div>
-          <span style={{ fontSize: isMois ? 13 : 16 }}>{accent!.label}</span>
+          {AccentIcon && <AccentIcon size={isMois ? 14 : 17} style={{ color: accent!.color, flexShrink: 0 }} />}
         </div>
 
         {/* Nom de la soirée */}
@@ -166,14 +168,14 @@ export default function CarteJour({ jour, mode, estAujourdhui }: Props) {
         {!isMois && (
           <div style={{ marginTop: 14 }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
-              <span style={{ fontSize: 18 }}>👥</span>
+              <Users size={18} style={{ color: accent!.color }} />
               <span style={{ fontSize: 20, fontWeight: 800, color: accent!.color }}>
                 {soiree!.predFreqActuelle}
               </span>
               <span style={{ fontSize: 12, color: 'rgba(240,240,248,0.3)' }}>pers.</span>
             </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-              <span style={{ fontSize: 18 }}>💶</span>
+              <Euro size={18} style={{ color: accent!.color }} />
               <span style={{ fontSize: 20, fontWeight: 800, color: accent!.color }}>
                 {(soiree!.predCAActuelle / 1000).toFixed(1)}k
               </span>
@@ -185,7 +187,7 @@ export default function CarteJour({ jour, mode, estAujourdhui }: Props) {
         {/* DJ — vue semaine uniquement */}
         {!isMois && soiree!.djNom && (
           <div style={{ marginTop: 10, display: 'flex', alignItems: 'center', gap: 6 }}>
-            <span style={{ fontSize: 12 }}>🎧</span>
+            <Headphones size={12} style={{ color: 'rgba(240,240,248,0.5)' }} />
             <span style={{ fontSize: 12, color: 'rgba(240,240,248,0.5)', fontWeight: 500 }}>
               {soiree!.djNom}
             </span>

@@ -1,4 +1,5 @@
 'use client'
+import { TriangleAlert } from 'lucide-react'
 import type { JourPlanning } from '@/hooks/usePlanning'
 import { getTypeAccent } from '@/lib/planning/type-couleurs'
 
@@ -28,7 +29,7 @@ export default function AlertesPlanning({ jours, seuilAlerte }: Props) {
         letterSpacing: '0.08em', color: 'rgba(240,240,248,0.4)',
         marginBottom: 10, display: 'flex', alignItems: 'center', gap: 8,
       }}>
-        <span style={{ color: '#f0954a' }}>⚠</span>
+        <TriangleAlert size={13} style={{ color: '#f0954a' }} />
         Alertes — variations &gt;{seuilAlerte}% en 24h
       </div>
       <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
@@ -43,7 +44,7 @@ export default function AlertesPlanning({ jours, seuilAlerte }: Props) {
               background: isHausse ? 'rgba(79,232,130,0.05)' : 'rgba(240,149,149,0.05)',
               border: `1px solid ${isHausse ? 'rgba(79,232,130,0.15)' : 'rgba(240,149,149,0.15)'}`,
             }}>
-              <div style={{ fontSize: 20 }}>{accent.label}</div>
+              <accent.icon size={19} style={{ color: accent.color, flexShrink: 0 }} />
               <div style={{ flex: 1 }}>
                 <div style={{ fontSize: 13, fontWeight: 600, color: '#f0f0f8' }}>
                   {jour.soiree!.nomEvenement || jour.soiree!.typeEvenement}

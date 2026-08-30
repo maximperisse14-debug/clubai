@@ -1,18 +1,19 @@
 'use client'
 import { useState } from 'react'
+import type { LucideIcon } from 'lucide-react'
 import type { LigneClassement } from '@/lib/classements/normalisation'
 import { getTypeAccent } from '@/lib/planning/type-couleurs'
 import FicheDetail from './FicheDetail'
 
 interface Props {
   titre: string
-  emoji: string
+  icon: LucideIcon
   lignes: LigneClassement[]
   dimension: 'type' | 'dj' | 'offre'
   loading?: boolean
 }
 
-export default function ColonneClassement({ titre, emoji, lignes, dimension, loading }: Props) {
+export default function ColonneClassement({ titre, icon: Icon, lignes, dimension, loading }: Props) {
   const [selection, setSelection] = useState<LigneClassement | null>(null)
 
   return (
@@ -31,7 +32,7 @@ export default function ColonneClassement({ titre, emoji, lignes, dimension, loa
           borderBottom: '1px solid rgba(255,255,255,0.06)',
           display: 'flex', alignItems: 'center', gap: 10,
         }}>
-          <span style={{ fontSize: 20 }}>{emoji}</span>
+          <Icon size={20} style={{ color: 'var(--c2)', flexShrink: 0 }} />
           <div>
             <div style={{ fontSize: 14, fontWeight: 700, color: '#f0f0f8' }}>{titre}</div>
             <div style={{ fontSize: 11, color: 'rgba(240,240,248,0.3)', marginTop: 2 }}>
@@ -109,9 +110,9 @@ export default function ColonneClassement({ titre, emoji, lignes, dimension, loa
                     {ligne.rang}
                   </div>
 
-                  {/* Emoji thème si disponible */}
+                  {/* Icône thème si disponible */}
                   {accent && (
-                    <span style={{ fontSize: 16, flexShrink: 0 }}>{accent.label}</span>
+                    <accent.icon size={16} style={{ color: accent.color, flexShrink: 0 }} />
                   )}
 
                   {/* Nom */}

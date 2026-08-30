@@ -1,14 +1,16 @@
 'use client'
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, useMemo } from 'react'
 import { format, getDay } from 'date-fns'
 import { useRouter } from 'next/navigation'
 import { useQueryClient } from '@tanstack/react-query'
+import { CalendarDays, Palette, Headphones, Pencil, Sparkles, Users, Euro } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import { useClub } from '@/hooks/useClub'
 import { useClubSettings } from '@/hooks/useClubSettings'
 import { useDJs } from '@/hooks/useDJs'
 import { getTypeAccent } from '@/lib/planning/type-couleurs'
 import { joursOuvertureVersGetDay, GETDAY_TO_JOUR_NOM } from '@/lib/planning/jours'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import DatePicker from './DatePicker'
 import ResultatPreview from './ResultatPreview'
 
@@ -43,7 +45,7 @@ export default function OngletTester() {
   const { data: club } = useClub()
   const { data: settings } = useClubSettings(club?.id)
   const { data: djs } = useDJs(club?.id)
-  const supabase = createClient()
+  const supabase = useMemo(() => createClient(), [])
 
   const [date, setDate] = useState<Date | null>(null)
   const [scenarios, setScenarios] = useState<Scenario[]>([
@@ -151,8 +153,8 @@ export default function OngletTester() {
         borderRadius: 18, padding: '22px 24px',
         marginBottom: 28, maxWidth: 700,
       }}>
-        <div style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'rgba(240,240,248,0.35)', marginBottom: 12 }}>
-          📅 Date commune aux 3 scénarios
+        <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'rgba(240,240,248,0.35)', marginBottom: 12 }}>
+          <CalendarDays size={12} /> Date commune aux 3 scénarios
         </div>
         <DatePicker value={date} onChange={setDate} joursOuverture={joursOuverture} />
       </div>
@@ -160,7 +162,6 @@ export default function OngletTester() {
       {/* 3 scénarios */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 16, marginBottom: 28 }}>
         {scenarios.map((s, idx) => {
-          const accent = s.typeEv ? getTypeAccent(s.typeEv) : null
           const isMeilleur = idx === meilleurIdx && s.freq !== null
           const couleur = COULEURS_SCENARIO[idx]
 
@@ -181,6 +182,7 @@ export default function OngletTester() {
               {isMeilleur && (
                 <div style={{
                   position: 'absolute', top: 12, right: 12,
+                  display: 'flex', alignItems: 'center', gap: 4,
                   padding: '3px 10px', borderRadius: 6,
                   background: `${couleur}20`,
                   border: `1px solid ${couleur}40`,
@@ -188,7 +190,7 @@ export default function OngletTester() {
                   color: couleur, letterSpacing: '0.06em',
                   textTransform: 'uppercase',
                 }}>
-                  ✦ Meilleur
+                  <Sparkles size={11} /> Meilleur
                 </div>
               )}
 
@@ -205,52 +207,54 @@ export default function OngletTester() {
 
                 {/* Thème */}
                 <div style={{ marginBottom: 12 }}>
-                  <div style={{ fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.07em', color: 'rgba(240,240,248,0.3)', marginBottom: 6 }}>
-                    🎨 Thème
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.07em', color: 'rgba(240,240,248,0.3)', marginBottom: 6 }}>
+                    <Palette size={11} /> Thème
                   </div>
-                  <select
+                  <Select
                     value={s.typeEv}
-                    onChange={e => calculeScenario(idx, { typeEv: e.target.value, freq: null, ca: null })}
-                    style={{
-                      width: '100%', padding: '9px 12px', borderRadius: 10,
-                      border: s.typeEv ? `1px solid ${accent?.color ?? 'transparent'}30` : '1px solid rgba(255,255,255,0.1)',
-                      background: 'var(--s2)', color: '#f0f0f8',
-                      fontSize: 13,
-                      outline: 'none',
-                    }}
+                    onValueChange={v => calculeScenario(idx, { typeEv: v ?? '', freq: null, ca: null })}
                   >
-                    <option value="">Choisir un thème...</option>
-                    {TYPES_EVENEMENT.map(t => (
-                      <option key={t} value={t}>{getTypeAccent(t).label} {t}</option>
-                    ))}
-                  </select>
+                    <SelectTrigger className="w-full" style={{ background: 'var(--s2)' }}>
+                      <SelectValue placeholder="Choisir un thème..." />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {TYPES_EVENEMENT.map(t => {
+                        const a = getTypeAccent(t)
+                        return (
+                          <SelectItem key={t} value={t}>
+                            <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
+                              <a.icon size={13} style={{ color: a.color }} /> {t}
+                            </span>
+                          </SelectItem>
+                        )
+                      })}
+                    </SelectContent>
+                  </Select>
                 </div>
 
                 {/* DJ */}
                 <div style={{ marginBottom: 12 }}>
-                  <div style={{ fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.07em', color: 'rgba(240,240,248,0.3)', marginBottom: 6 }}>
-                    🎧 DJ
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.07em', color: 'rgba(240,240,248,0.3)', marginBottom: 6 }}>
+                    <Headphones size={11} /> DJ
                   </div>
-                  <select
+                  <Select
                     value={s.djId}
-                    onChange={e => calculeScenario(idx, { djId: e.target.value, freq: null, ca: null })}
-                    style={{
-                      width: '100%', padding: '9px 12px', borderRadius: 10,
-                      border: '1px solid rgba(255,255,255,0.1)',
-                      background: 'var(--s2)', color: '#f0f0f8',
-                      fontSize: 13,
-                      outline: 'none',
-                    }}
+                    onValueChange={v => calculeScenario(idx, { djId: v ?? '', freq: null, ca: null })}
                   >
-                    <option value="">Sans DJ</option>
-                    {djs?.map(dj => <option key={dj.id} value={dj.id}>{dj.nom}</option>)}
-                  </select>
+                    <SelectTrigger className="w-full" style={{ background: 'var(--s2)' }}>
+                      <SelectValue placeholder="Sans DJ" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="">Sans DJ</SelectItem>
+                      {djs?.map(dj => <SelectItem key={dj.id} value={dj.id}>{dj.nom}</SelectItem>)}
+                    </SelectContent>
+                  </Select>
                 </div>
 
                 {/* Nom */}
                 <div style={{ marginBottom: 16 }}>
-                  <div style={{ fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.07em', color: 'rgba(240,240,248,0.3)', marginBottom: 6 }}>
-                    ✏️ Nom (optionnel)
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.07em', color: 'rgba(240,240,248,0.3)', marginBottom: 6 }}>
+                    <Pencil size={11} /> Nom (optionnel)
                   </div>
                   <input
                     value={s.nomEv}
@@ -291,9 +295,10 @@ export default function OngletTester() {
                         : `linear-gradient(135deg, ${couleur}, ${couleur}aa)`,
                       transition: 'all 0.2s',
                       opacity: saving !== null && saving !== idx ? 0.4 : 1,
+                      display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
                     }}
                   >
-                    {saving === idx ? 'Planification...' : '✦ Planifier ce scénario'}
+                    {saving === idx ? 'Planification...' : <><Sparkles size={13} /> Planifier ce scénario</>}
                   </button>
                 )}
               </div>
@@ -339,11 +344,11 @@ export default function OngletTester() {
                   {LABELS_SCENARIO[s.idx]} — {s.typeEv}
                 </div>
                 <div style={{ display: 'flex', gap: 16, alignItems: 'center' }}>
-                  <span style={{ fontSize: 13, fontWeight: 700, color: couleur }}>
-                    👥 {s.freq} pers.
+                  <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5, fontSize: 13, fontWeight: 700, color: couleur }}>
+                    <Users size={13} /> {s.freq} pers.
                   </span>
-                  <span style={{ fontSize: 13, fontWeight: 700, color: couleur }}>
-                    💶 {((s.ca ?? 0) / 1000).toFixed(1)}k€
+                  <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5, fontSize: 13, fontWeight: 700, color: couleur }}>
+                    <Euro size={13} /> {((s.ca ?? 0) / 1000).toFixed(1)}k€
                   </span>
                   {diff !== null && (
                     <span style={{ fontSize: 11, color: '#f09595', fontWeight: 600 }}>

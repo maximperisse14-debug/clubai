@@ -2,6 +2,7 @@
 import { useState, useRef, useEffect } from 'react'
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
+import { Bot, Sparkles, BarChart3, TrendingUp, FolderOpen, CalendarDays, type LucideIcon } from 'lucide-react'
 import { useClub } from '@/hooks/useClub'
 
 interface Message {
@@ -19,11 +20,11 @@ const SUGGESTIONS = [
   "Prévisions pour la semaine du 1er août",
 ]
 
-const TOOL_LABELS: Record<string, string> = {
-  calculer_prevision: '🔮 Calcul prévision',
-  get_coefficients: '📊 Analyse coefficients',
-  get_hw_forecast: '📈 Prévisions HW',
-  get_stats_agregees: '🗂 Stats agrégées',
+const TOOL_LABELS: Record<string, { icon: LucideIcon; label: string }> = {
+  calculer_prevision: { icon: Sparkles, label: 'Calcul prévision' },
+  get_coefficients: { icon: BarChart3, label: 'Analyse coefficients' },
+  get_hw_forecast: { icon: TrendingUp, label: 'Prévisions HW' },
+  get_stats_agregees: { icon: FolderOpen, label: 'Stats agrégées' },
 }
 
 export default function AssistantPage() {
@@ -90,7 +91,7 @@ export default function AssistantPage() {
         {/* État vide */}
         {messages.length === 0 && (
           <div style={{ maxWidth: 640, margin: '60px auto 0', textAlign: 'center' }}>
-            <div style={{ fontSize: 32, marginBottom: 16 }}>🤖</div>
+            <Bot size={32} style={{ margin: '0 auto 16px', color: 'var(--c2)' }} />
             <div style={{ fontSize: 20, fontWeight: 700, color: 'var(--t1)', marginBottom: 8 }}>
               Assistant ClubAI
             </div>
@@ -151,7 +152,7 @@ export default function AssistantPage() {
                   : 'linear-gradient(135deg, #7b5ce5, #d45fa8)',
                 color: '#fff',
               }}>
-                {msg.role === 'user' ? (club?.nom?.[0]?.toUpperCase() ?? 'M') : '🤖'}
+                {msg.role === 'user' ? (club?.nom?.[0]?.toUpperCase() ?? 'M') : <Bot size={17} />}
               </div>
 
               {/* Bulle */}
@@ -169,16 +170,20 @@ export default function AssistantPage() {
                 {/* Outils appelés */}
                 {msg.tools_called && msg.tools_called.length > 0 && (
                   <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 10 }}>
-                    {msg.tools_called.map((t, idx) => (
-                      <span key={`${t}-${idx}`} style={{
-                        fontSize: 10, padding: '2px 8px', borderRadius: 4,
-                        background: 'rgba(79,163,232,0.12)',
-                        border: '1px solid rgba(79,163,232,0.2)',
-                        color: '#4fa3e8', fontWeight: 600,
-                      }}>
-                        {TOOL_LABELS[t] ?? t}
-                      </span>
-                    ))}
+                    {msg.tools_called.map((t, idx) => {
+                      const toolInfo = TOOL_LABELS[t]
+                      return (
+                        <span key={`${t}-${idx}`} style={{
+                          display: 'inline-flex', alignItems: 'center', gap: 4,
+                          fontSize: 10, padding: '2px 8px', borderRadius: 4,
+                          background: 'rgba(79,163,232,0.12)',
+                          border: '1px solid rgba(79,163,232,0.2)',
+                          color: '#4fa3e8', fontWeight: 600,
+                        }}>
+                          {toolInfo && <toolInfo.icon size={11} />} {toolInfo?.label ?? t}
+                        </span>
+                      )
+                    })}
                   </div>
                 )}
 
@@ -326,7 +331,7 @@ export default function AssistantPage() {
                           fontWeight: 700,
                         }}
                       >
-                        📅 Voir dans le planning →
+                        <CalendarDays size={14} /> Voir dans le planning →
                       </a>
                     )}
                   </div>

@@ -4,21 +4,12 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Skeleton } from '@/components/ui/skeleton'
 import SoireeForm from '@/components/donnees/SoireeForm'
 import { useClub } from '@/hooks/useClub'
-import { useQuery } from '@tanstack/react-query'
-import { createClient } from '@/lib/supabase/client'
+import { useDJs } from '@/hooks/useDJs'
 
 export default function NouvelleSoireePage() {
   const router = useRouter()
   const { data: club } = useClub()
-  const { data: djs, isLoading } = useQuery({
-    queryKey: ['djs', club?.id],
-    queryFn: async () => {
-      const supabase = createClient()
-      const { data } = await supabase.from('djs').select('id, nom').eq('club_id', club!.id).eq('actif', true)
-      return data ?? []
-    },
-    enabled: !!club?.id,
-  })
+  const { data: djs, isLoading } = useDJs(club?.id)
 
   if (!club || isLoading) {
     return (

@@ -1,6 +1,6 @@
 'use client'
 import { useQuery } from '@tanstack/react-query'
-import { AlertCircle } from 'lucide-react'
+import { AlertCircle, Info, Palette, Headphones, Gift } from 'lucide-react'
 import { useClub } from '@/hooks/useClub'
 import { getClassement } from '@/lib/classements/normalisation'
 import ColonneClassement from '@/components/classements/ColonneClassement'
@@ -67,6 +67,9 @@ export default function ClassementsPage() {
 
       {/* Note explicative */}
       <div style={{
+        display: 'flex',
+        alignItems: 'flex-start',
+        gap: 8,
         padding: '12px 16px',
         borderRadius: 12,
         background: 'rgba(123,92,229,0.08)',
@@ -76,30 +79,33 @@ export default function ClassementsPage() {
         color: 'rgba(240,240,248,0.5)',
         lineHeight: 1.6,
       }}>
-        ℹ️ Les classements sont <strong style={{ color: 'rgba(240,240,248,0.7)' }}>normalisés</strong> :
-        un thème programmé uniquement le samedi n&apos;est pas avantagé par rapport à un thème programmé le mercredi.
-        Clique sur une ligne pour voir le détail.
+        <Info size={14} style={{ marginTop: 2, flexShrink: 0 }} />
+        <div>
+          Les classements sont <strong style={{ color: 'rgba(240,240,248,0.7)' }}>normalisés</strong> :
+          un thème programmé uniquement le samedi n&apos;est pas avantagé par rapport à un thème programmé le mercredi.
+          Clique sur une ligne pour voir le détail.
+        </div>
       </div>
 
       {/* 3 colonnes */}
       <div style={{ display: 'flex', gap: 16, alignItems: 'flex-start' }}>
         <ColonneClassement
           titre="Thèmes"
-          emoji="🎨"
+          icon={Palette}
           lignes={themes ?? []}
           dimension="type"
           loading={themesLoading}
         />
         <ColonneClassement
           titre="DJs"
-          emoji="🎧"
+          icon={Headphones}
           lignes={djs ?? []}
           dimension="dj"
           loading={djsLoading}
         />
         <ColonneClassement
           titre="Offres & Promotions"
-          emoji="🎁"
+          icon={Gift}
           lignes={offres ?? []}
           dimension="offre"
           loading={offresLoading}

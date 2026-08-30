@@ -1,4 +1,5 @@
 'use client'
+import { useMemo } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { createClient } from '@/lib/supabase/client'
 
@@ -6,7 +7,7 @@ export function useSoirees(
   clubId: string,
   filters?: { mois?: number; jour?: string; type?: string; dj?: string }
 ) {
-  const supabase = createClient()
+  const supabase = useMemo(() => createClient(), [])
   return useQuery({
     queryKey: ['soirees', clubId, filters],
     queryFn: async () => {

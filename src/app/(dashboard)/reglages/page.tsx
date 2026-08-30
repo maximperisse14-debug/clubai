@@ -1,14 +1,19 @@
 'use client'
 import { useState, useEffect } from 'react'
-import { useForm } from 'react-hook-form'
+import { useForm, useWatch } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
+import { useQueryClient } from '@tanstack/react-query'
+import { AlertCircle } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Label } from '@/components/ui/label'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
+import { Skeleton } from '@/components/ui/skeleton'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { createClient } from '@/lib/supabase/client'
+import { useClub } from '@/hooks/useClub'
+import { useClubSettings } from '@/hooks/useClubSettings'
 import type { Json } from '@/types/database'
 import JoursOuvertureSection from '@/components/reglages/JoursOuvertureSection'
 import AlertesSection from '@/components/reglages/AlertesSection'
@@ -64,8 +69,10 @@ async function geocodeAdresse(adresse: string): Promise<{ lat: number; lon: numb
 }
 
 export default function ReglagesPage() {
-  const [clubId, setClubId] = useState<string | null>(null)
-  const [capaciteDefault, setCapaciteDefault] = useState(350)
+  const { data: club, isLoading: clubLoading, error: clubError } = useClub()
+  const { data: settings, isLoading: settingsLoading, error: settingsError } = useClubSettings(club?.id)
+  const queryClient = useQueryClient()
+
   const [saving, setSaving] = useState(false)
   const [saved, setSaved] = useState(false)
   const [saveError, setSaveError] = useState<string | null>(null)
@@ -73,7 +80,7 @@ export default function ReglagesPage() {
   const [seuilAlerte, setSeuilAlerte] = useState(10)
   const [horairesPreferentiels, setHorairesPreferentiels] = useState<HorairePreset[]>([])
 
-  const { register, handleSubmit, setValue, watch, formState: { errors } } = useForm<FormData>({
+  const { register, handleSubmit, setValue, control, formState: { errors } } = useForm<FormData>({
     resolver: zodResolver(schema) as any,
     defaultValues: {
       type_etablissement: 'bar',
@@ -90,7 +97,12 @@ export default function ReglagesPage() {
     },
   })
 
-  const typeEtabl = watch('type_etablissement')
+  const typeEtabl = useWatch({ control, name: 'type_etablissement' })
+  const typeLieu = useWatch({ control, name: 'type_lieu' })
+  const accessibilite = useWatch({ control, name: 'accessibilite' })
+  const region = useWatch({ control, name: 'region' })
+  const zoneVacances = useWatch({ control, name: 'zone_vacances' })
+  const idxPopulation = useWatch({ control, name: 'idx_population' })
 
   const typeLieuOptions = typeEtabl === 'bar'
     ? [
@@ -104,39 +116,36 @@ export default function ReglagesPage() {
         { value: 'club_rooftop',       label: 'Club rooftop' },
       ]
 
+  // Peupler le formulaire une fois les données chargées (pas d'erreur possible
+  // ici : si le fetch a échoué, clubError/settingsError bloquent le rendu du
+  // formulaire plus bas avant que l'utilisateur puisse écraser ses réglages
+  // avec les valeurs par défaut).
   useEffect(() => {
-    async function loadSettings() {
-      const { data: { user } } = await supabase.auth.getUser()
-      if (!user) return
-      const { data: club } = await supabase.from('clubs').select('id, capacite').eq('owner_id', user.id).single()
-      if (!club) return
-      setClubId(club.id)
-      setCapaciteDefault(club.capacite ?? 350)
-      setValue('capacite', club.capacite ?? 350)
+    if (!club) return
+    setValue('capacite', club.capacite ?? 350)
+  }, [club, setValue])
 
-      const { data: s } = await supabase.from('club_settings').select('*').eq('club_id', club.id).single()
-      if (!s) return
-      setValue('type_etablissement', s.type_etablissement)
-      setValue('type_lieu',          s.type_lieu)
-      setValue('accessibilite',      s.accessibilite)
-      setValue('region',             s.region)
-      setValue('ville',              s.ville ?? '')
-      setValue('adresse',            s.adresse ?? '')
-      if (s.jours_ouverture) setJoursOuverture(s.jours_ouverture)
-      if (s.seuil_alerte_variation != null) setSeuilAlerte(s.seuil_alerte_variation)
-      if (s.horaires_preferentiels) setHorairesPreferentiels(s.horaires_preferentiels as unknown as HorairePreset[])
-      setValue('zone_vacances',      s.zone_vacances ?? 'C')
-      setValue('idx_population',     Number(s.idx_population))
-      setValue('pct_etudiants',      s.pct_etudiants)
-      setValue('pct_jeunes_actifs',  s.pct_jeunes_actifs)
-      setValue('pct_adultes',        s.pct_adultes)
-      setValue('panier_base',        Number(s.panier_base))
-    }
-    loadSettings()
-  }, [setValue])
+  useEffect(() => {
+    if (!settings) return
+    setValue('type_etablissement', settings.type_etablissement)
+    setValue('type_lieu',          settings.type_lieu)
+    setValue('accessibilite',      settings.accessibilite)
+    setValue('region',             settings.region)
+    setValue('ville',              settings.ville ?? '')
+    setValue('adresse',            settings.adresse ?? '')
+    if (settings.jours_ouverture) setJoursOuverture(settings.jours_ouverture)
+    if (settings.seuil_alerte_variation != null) setSeuilAlerte(settings.seuil_alerte_variation)
+    if (settings.horaires_preferentiels) setHorairesPreferentiels(settings.horaires_preferentiels as unknown as HorairePreset[])
+    setValue('zone_vacances',      settings.zone_vacances ?? 'C')
+    setValue('idx_population',     Number(settings.idx_population))
+    setValue('pct_etudiants',      settings.pct_etudiants)
+    setValue('pct_jeunes_actifs',  settings.pct_jeunes_actifs)
+    setValue('pct_adultes',        settings.pct_adultes)
+    setValue('panier_base',        Number(settings.panier_base))
+  }, [settings, setValue])
 
   const onSubmit = async (data: FormData) => {
-    if (!clubId) return
+    if (!club?.id) return
     setSaving(true)
     setSaved(false)
     setSaveError(null)
@@ -150,20 +159,20 @@ export default function ReglagesPage() {
       }
 
       // Mettre à jour la capacité dans clubs
-      const { error: clubError } = await supabase
+      const { error: clubUpdateError } = await supabase
         .from('clubs')
         .update({ capacite: data.capacite })
-        .eq('id', clubId)
+        .eq('id', club.id)
 
-      if (clubError) {
-        console.error('[reglages] update clubs', clubError)
-        setSaveError(`Erreur (clubs) : ${clubError.message}`)
+      if (clubUpdateError) {
+        console.error('[reglages] update clubs', clubUpdateError)
+        setSaveError(`Erreur (clubs) : ${clubUpdateError.message}`)
         return
       }
 
       // Upsert club_settings
-      const { error: settingsError } = await supabase.from('club_settings').upsert({
-        club_id:            clubId,
+      const { error: settingsUpsertError } = await supabase.from('club_settings').upsert({
+        club_id:            club.id,
         type_etablissement: data.type_etablissement,
         type_lieu:          data.type_lieu,
         accessibilite:      data.accessibilite,
@@ -184,17 +193,24 @@ export default function ReglagesPage() {
         updated_at:         new Date().toISOString(),
       }, { onConflict: 'club_id' })
 
-      if (settingsError) {
-        console.error('[reglages] upsert club_settings', settingsError)
-        setSaveError(`Erreur (club_settings) : ${settingsError.message}`)
+      if (settingsUpsertError) {
+        console.error('[reglages] upsert club_settings', settingsUpsertError)
+        setSaveError(`Erreur (club_settings) : ${settingsUpsertError.message}`)
         return
       }
 
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: ['club'] }),
+        queryClient.invalidateQueries({ queryKey: ['club_settings', club.id] }),
+      ])
       setSaved(true)
     } finally {
       setSaving(false)
     }
   }
+
+  const loading = clubLoading || settingsLoading
+  const loadError = clubError ?? settingsError
 
   return (
     <div className="space-y-6 p-6 max-w-2xl">
@@ -206,6 +222,26 @@ export default function ReglagesPage() {
         </p>
       </div>
 
+      {loading && (
+        <div className="space-y-4">
+          {Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} className="h-32 w-full rounded-xl" />)}
+        </div>
+      )}
+
+      {!loading && loadError && (
+        <div className="flex items-start gap-3 rounded-md border border-red-500/30 bg-red-500/10 p-4 text-sm text-red-400">
+          <AlertCircle size={16} className="mt-0.5 shrink-0" />
+          <div>
+            <p className="font-medium">Erreur de chargement</p>
+            <p className="text-xs mt-0.5 font-mono break-all">
+              {loadError instanceof Error ? loadError.message : String(loadError)}
+            </p>
+            <p className="text-xs mt-1 text-red-400/70">Recharge la page avant d&apos;enregistrer, pour ne pas écraser tes réglages avec des valeurs par défaut.</p>
+          </div>
+        </div>
+      )}
+
+      {!loading && !loadError && (
       <form onSubmit={handleSubmit(onSubmit as any)} className="space-y-5">
 
         {/* Établissement */}
@@ -217,7 +253,7 @@ export default function ReglagesPage() {
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-1.5">
                 <Label>Type d'établissement</Label>
-                <Select value={watch('type_etablissement')} onValueChange={v => setValue('type_etablissement', v as 'bar' | 'discotheque')}>
+                <Select value={typeEtabl} onValueChange={v => setValue('type_etablissement', v as 'bar' | 'discotheque')}>
                   <SelectTrigger><SelectValue /></SelectTrigger>
                   <SelectContent>
                     <SelectItem value="bar">Bar</SelectItem>
@@ -227,7 +263,7 @@ export default function ReglagesPage() {
               </div>
               <div className="space-y-1.5">
                 <Label>Exposition météo</Label>
-                <Select value={watch('type_lieu')} onValueChange={v => setValue('type_lieu', v as string)}>
+                <Select value={typeLieu} onValueChange={v => setValue('type_lieu', v as string)}>
                   <SelectTrigger><SelectValue placeholder="Choisir..." /></SelectTrigger>
                   <SelectContent>
                     {typeLieuOptions.map(o => <SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>)}
@@ -237,7 +273,7 @@ export default function ReglagesPage() {
             </div>
             <div className="space-y-1.5">
               <Label>Accessibilité</Label>
-              <Select value={watch('accessibilite')} onValueChange={v => setValue('accessibilite', v as 'centre_ville' | 'hors_centre_ville')}>
+              <Select value={accessibilite} onValueChange={v => setValue('accessibilite', v as 'centre_ville' | 'hors_centre_ville')}>
                 <SelectTrigger><SelectValue /></SelectTrigger>
                 <SelectContent>
                   <SelectItem value="centre_ville">Centre-ville</SelectItem>
@@ -258,7 +294,7 @@ export default function ReglagesPage() {
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-1.5">
                 <Label>Région</Label>
-                <Select value={watch('region')} onValueChange={v => setValue('region', v as string)}>
+                <Select value={region} onValueChange={v => setValue('region', v as string)}>
                   <SelectTrigger><SelectValue /></SelectTrigger>
                   <SelectContent>
                     {REGIONS.map(r => <SelectItem key={r} value={r}>{r}</SelectItem>)}
@@ -276,7 +312,7 @@ export default function ReglagesPage() {
             </div>
             <div className="space-y-1.5">
               <Label>Zone de vacances scolaires</Label>
-              <Select value={watch('zone_vacances')} onValueChange={v => setValue('zone_vacances', v as 'A' | 'B' | 'C')}>
+              <Select value={zoneVacances} onValueChange={v => setValue('zone_vacances', v as 'A' | 'B' | 'C')}>
                 <SelectTrigger><SelectValue /></SelectTrigger>
                 <SelectContent>
                   <SelectItem value="A">Zone A (Lyon, Bordeaux, Clermont-Fd…)</SelectItem>
@@ -297,7 +333,7 @@ export default function ReglagesPage() {
           <CardContent>
             <div className="space-y-1.5">
               <Label>Indice de densité de population</Label>
-              <Select value={watch('idx_population')?.toFixed(1)} onValueChange={v => setValue('idx_population', parseFloat(v as string))}>
+              <Select value={idxPopulation?.toFixed(1)} onValueChange={v => setValue('idx_population', parseFloat(v as string))}>
                 <SelectTrigger><SelectValue /></SelectTrigger>
                 <SelectContent>
                   {IDX_POP_OPTIONS.map(o => <SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>)}
@@ -395,6 +431,7 @@ export default function ReglagesPage() {
           <p className="text-center text-sm text-red-400">{saveError}</p>
         )}
       </form>
+      )}
     </div>
   )
 }

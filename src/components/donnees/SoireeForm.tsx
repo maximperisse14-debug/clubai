@@ -3,6 +3,7 @@ import { useForm, type SubmitHandler } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { parseISO } from 'date-fns'
+import { toast } from 'sonner'
 import { createClient } from '@/lib/supabase/client'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -101,7 +102,7 @@ export default function SoireeForm({ clubId, djs, onSuccess }: Props) {
       .single()
 
     if (soireeErr || !soiree) {
-      alert('Erreur: ' + soireeErr?.message)
+      toast.error('Erreur lors de l\'enregistrement de la soirée', { description: soireeErr?.message })
       return
     }
 
@@ -119,13 +120,14 @@ export default function SoireeForm({ clubId, djs, onSuccess }: Props) {
       })
 
       if (resultatsErr) {
-        alert('La soirée est enregistrée, mais les résultats n\'ont pas pu être sauvegardés : ' + resultatsErr.message)
+        toast.error('La soirée est enregistrée, mais les résultats n\'ont pas pu être sauvegardés', { description: resultatsErr.message })
         return
       }
 
       await fetch('/api/coefficients/recalcul', { method: 'POST' })
     }
 
+    toast.success('Soirée enregistrée')
     onSuccess?.()
   }
 

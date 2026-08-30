@@ -3,6 +3,7 @@ import { useState } from 'react'
 import { addWeeks, subWeeks, addMonths, subMonths, startOfWeek, format } from 'date-fns'
 import { fr } from 'date-fns/locale'
 import { ChevronLeft, ChevronRight, AlertCircle } from 'lucide-react'
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { usePlanning } from '@/hooks/usePlanning'
 import { useClub } from '@/hooks/useClub'
 import { useClubSettings } from '@/hooks/useClubSettings'
@@ -42,19 +43,21 @@ export default function PlanningPage() {
 
       {/* Toggle semaine / mois */}
       <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 20 }}>
-        <div style={{ display: 'flex', gap: 4, padding: 3, borderRadius: 12, background: 'rgba(255,255,255,0.05)' }}>
-          {(['semaine', 'mois'] as const).map(m => (
-            <button key={m} onClick={() => setMode(m)} style={{
-              padding: '7px 18px', borderRadius: 9, border: 'none', cursor: 'pointer',
-              fontSize: 13, fontWeight: 600,
-              background: mode === m ? 'var(--grad)' : 'transparent',
-              color: mode === m ? '#fff' : 'var(--t2)',
-              transition: 'all 0.15s',
-            }}>
-              {m.charAt(0).toUpperCase() + m.slice(1)}
-            </button>
-          ))}
-        </div>
+        <Tabs value={mode} onValueChange={v => setMode(v as 'semaine' | 'mois')}>
+          <TabsList style={{ display: 'flex', height: 'auto', gap: 4, padding: 3, borderRadius: 12, background: 'rgba(255,255,255,0.05)' }}>
+            {(['semaine', 'mois'] as const).map(m => (
+              <TabsTrigger key={m} value={m} style={{
+                padding: '7px 18px', height: 'auto', borderRadius: 9,
+                fontSize: 13, fontWeight: 600,
+                background: mode === m ? 'var(--grad)' : 'transparent',
+                color: mode === m ? '#fff' : 'var(--t2)',
+                transition: 'all 0.15s',
+              }}>
+                {m.charAt(0).toUpperCase() + m.slice(1)}
+              </TabsTrigger>
+            ))}
+          </TabsList>
+        </Tabs>
       </div>
 
       {/* Navigation temporelle */}

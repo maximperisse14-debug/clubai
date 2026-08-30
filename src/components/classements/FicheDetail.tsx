@@ -1,4 +1,5 @@
 'use client'
+import { Users, Euro } from 'lucide-react'
 import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog'
 import type { LigneClassement } from '@/lib/classements/normalisation'
 import { getTypeAccent } from '@/lib/planning/type-couleurs'
@@ -20,7 +21,7 @@ export default function FicheDetail({ ligne, dimension, onClose }: Props) {
   return (
     <Dialog open onOpenChange={onClose}>
       <DialogContent style={{
-        background: '#0d0d14',
+        background: 'var(--s2)',
         border: `1px solid ${accent ? accent.color + '35' : 'rgba(255,255,255,0.1)'}`,
         borderRadius: 20,
         maxWidth: 500,
@@ -38,7 +39,7 @@ export default function FicheDetail({ ligne, dimension, onClose }: Props) {
         <div style={{ padding: '24px 28px' }}>
           {/* Header */}
           <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 22 }}>
-            {accent && <span style={{ fontSize: 28 }}>{accent.label}</span>}
+            {accent && <accent.icon size={26} style={{ color: accent.color, flexShrink: 0 }} />}
             <div>
               <DialogTitle style={{ fontSize: 18, fontWeight: 800, color: '#f0f0f8' }}>
                 {ligne.valeur}
@@ -74,7 +75,7 @@ export default function FicheDetail({ ligne, dimension, onClose }: Props) {
               {/* Fréquentation */}
               <div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 7, marginBottom: 5 }}>
-                  <span style={{ fontSize: 16 }}>👥</span>
+                  <Users size={16} style={{ color: 'rgba(240,240,248,0.5)' }} />
                   <span style={{ fontSize: 11, color: 'rgba(240,240,248,0.4)' }}>Fréquentation</span>
                 </div>
                 <div style={{ fontSize: 22, fontWeight: 800, color: isPositif(ligne.impact_freq) ? '#4fe882' : '#f09595' }}>
@@ -87,7 +88,7 @@ export default function FicheDetail({ ligne, dimension, onClose }: Props) {
               {/* CA */}
               <div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 7, marginBottom: 5 }}>
-                  <span style={{ fontSize: 16 }}>💶</span>
+                  <Euro size={16} style={{ color: 'rgba(240,240,248,0.5)' }} />
                   <span style={{ fontSize: 11, color: 'rgba(240,240,248,0.4)' }}>CA</span>
                 </div>
                 <div style={{ fontSize: 22, fontWeight: 800, color: isPositif(ligne.impact_ca) ? '#4fe882' : '#f09595' }}>

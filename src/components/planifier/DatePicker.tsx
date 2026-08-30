@@ -2,6 +2,7 @@
 import { useState } from 'react'
 import { addDays, format, getDay, startOfDay } from 'date-fns'
 import { fr } from 'date-fns/locale'
+import { CalendarDays } from 'lucide-react'
 
 interface Props {
   value: Date | null
@@ -79,7 +80,7 @@ export default function DatePicker({ value, onChange, joursOuverture = JOURS_OUV
             gap: 5,
           }}
         >
-          📅 Autre date
+          <CalendarDays size={13} /> Autre date
         </button>
       </div>
 
@@ -110,8 +111,8 @@ export default function DatePicker({ value, onChange, joursOuverture = JOURS_OUV
 
       {/* Date sélectionnée */}
       {value && (
-        <div style={{ marginTop: 8, fontSize: 12, color: 'rgba(240,240,248,0.4)' }}>
-          📅 {format(value, 'EEEE d MMMM yyyy', { locale: fr })}
+        <div style={{ marginTop: 8, display: 'flex', alignItems: 'center', gap: 5, fontSize: 12, color: 'rgba(240,240,248,0.4)' }}>
+          <CalendarDays size={12} /> {format(value, 'EEEE d MMMM yyyy', { locale: fr })}
         </div>
       )}
     </div>

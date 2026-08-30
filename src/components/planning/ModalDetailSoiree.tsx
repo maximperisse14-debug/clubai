@@ -14,7 +14,7 @@ export default function ModalDetailSoiree({ jour, onClose }: { jour: JourPlannin
   return (
     <Dialog open onOpenChange={onClose}>
       <DialogContent style={{
-        background: '#0d0d14',
+        background: 'var(--s2)',
         border: `1px solid ${accent.color}40`,
         boxShadow: `0 0 40px ${accent.glow}`,
         borderRadius: 20,
@@ -31,7 +31,7 @@ export default function ModalDetailSoiree({ jour, onClose }: { jour: JourPlannin
               {dateFormatee}
             </div>
             <DialogTitle style={{ color: '#f0f0f8', fontSize: 20, fontWeight: 700, display: 'flex', alignItems: 'center', gap: 10 }}>
-              <span style={{ fontSize: 24 }}>{accent.label}</span>
+              <accent.icon size={22} style={{ color: accent.color, flexShrink: 0 }} />
               {soiree.nomEvenement || soiree.typeEvenement}
             </DialogTitle>
             <div style={{ fontSize: 12, color: accent.color, fontWeight: 600, marginTop: 4 }}>

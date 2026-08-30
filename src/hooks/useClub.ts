@@ -1,9 +1,10 @@
 'use client'
+import { useMemo } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { createClient } from '@/lib/supabase/client'
 
 export function useClub() {
-  const supabase = createClient()
+  const supabase = useMemo(() => createClient(), [])
   return useQuery({
     queryKey: ['club'],
     queryFn: async () => {

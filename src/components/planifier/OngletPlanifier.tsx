@@ -1,7 +1,8 @@
 'use client'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { useRouter } from 'next/navigation'
 import { useQueryClient } from '@tanstack/react-query'
+import { CalendarDays, Palette, Headphones, Clock, Gift, Megaphone, Sparkles } from 'lucide-react'
 import { format, getDay } from 'date-fns'
 import { fr } from 'date-fns/locale'
 import { createClient } from '@/lib/supabase/client'
@@ -46,7 +47,9 @@ const LABEL_STYLE = {
   letterSpacing: '0.08em',
   color: 'rgba(240,240,248,0.35)',
   marginBottom: 8,
-  display: 'block',
+  display: 'flex',
+  alignItems: 'center',
+  gap: 6,
 }
 
 const CARD_STYLE = {
@@ -62,7 +65,7 @@ export default function OngletPlanifier() {
   const { data: club } = useClub()
   const { data: settings } = useClubSettings(club?.id)
   const { data: djs } = useDJs(club?.id)
-  const supabase = createClient()
+  const supabase = useMemo(() => createClient(), [])
 
   const [date, setDate] = useState<Date | null>(null)
   const [typeEv, setTypeEv] = useState('')
@@ -199,7 +202,7 @@ export default function OngletPlanifier() {
 
         {/* Date */}
         <div style={CARD_STYLE}>
-          <label style={LABEL_STYLE}>📅 Date de la soirée</label>
+          <label style={LABEL_STYLE}><CalendarDays size={12} />Date de la soirée</label>
           <DatePicker value={date} onChange={setDate} joursOuverture={joursOuverture} />
         </div>
 
@@ -209,7 +212,7 @@ export default function OngletPlanifier() {
           border: `1px solid ${accent ? accent.color + '30' : 'rgba(255,255,255,0.07)'}`,
           transition: 'border-color 0.3s',
         }}>
-          <label style={LABEL_STYLE}>🎨 Thème de la soirée</label>
+          <label style={LABEL_STYLE}><Palette size={12} />Thème de la soirée</label>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 8, marginBottom: 12 }}>
             {TYPES_EVENEMENT.map(t => {
               const a = getTypeAccent(t)
@@ -234,7 +237,7 @@ export default function OngletPlanifier() {
                     transition: 'all 0.15s',
                   }}
                 >
-                  <span>{a.label}</span>
+                  <a.icon size={13} style={{ flexShrink: 0 }} />
                   <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{t}</span>
                 </button>
               )
@@ -314,7 +317,7 @@ export default function OngletPlanifier() {
         {/* DJ */}
         <div style={CARD_STYLE}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
-            <label style={{ ...LABEL_STYLE, marginBottom: 0 }}>🎧 DJ</label>
+            <label style={{ ...LABEL_STYLE, marginBottom: 0 }}><Headphones size={12} />DJ</label>
             <button
               onClick={() => setDjMode(m => m === 'liste' ? 'nouveau' : 'liste')}
               style={{ fontSize: 11, color: '#4fa3e8', background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'inherit', fontWeight: 600 }}
@@ -362,7 +365,7 @@ export default function OngletPlanifier() {
 
           {/* Horaires */}
           <div style={CARD_STYLE}>
-            <label style={LABEL_STYLE}>🕐 Horaires</label>
+            <label style={LABEL_STYLE}><Clock size={12} />Horaires</label>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
               {HORAIRES_PRESETS.map(h => (
                 <button
@@ -443,14 +446,14 @@ export default function OngletPlanifier() {
 
           {/* Promotion */}
           <div style={{ ...CARD_STYLE, display: 'flex', flexDirection: 'column', gap: 12 }}>
-            <label style={LABEL_STYLE}>🎁 Promotion</label>
+            <label style={LABEL_STYLE}><Gift size={12} />Promotion</label>
             <input
               value={promotion}
               onChange={e => setPromotion(e.target.value)}
               placeholder="Ex: Shot offert avant 23h..."
               style={STYLES_INPUT}
             />
-            <label style={{ ...LABEL_STYLE, marginBottom: 0, marginTop: 4 }}>📣 Budget com.</label>
+            <label style={{ ...LABEL_STYLE, marginBottom: 0, marginTop: 4 }}><Megaphone size={12} />Budget com.</label>
             <div style={{ position: 'relative' }}>
               <input
                 type="number"
@@ -479,28 +482,28 @@ export default function OngletPlanifier() {
               Récap soirée
             </div>
             {date && (
-              <div style={{ fontSize: 13, fontWeight: 600, color: 'rgba(240,240,248,0.7)', marginBottom: 6 }}>
-                📅 {format(date, 'EEEE d MMMM', { locale: fr })}
+              <div style={{ fontSize: 13, fontWeight: 600, color: 'rgba(240,240,248,0.7)', marginBottom: 6, display: 'flex', alignItems: 'center', gap: 6 }}>
+                <CalendarDays size={13} /> {format(date, 'EEEE d MMMM', { locale: fr })}
               </div>
             )}
             {typeFinal && (
               <div style={{ fontSize: 15, fontWeight: 700, color: accent?.color ?? '#f0f0f8', display: 'flex', alignItems: 'center', gap: 7 }}>
-                <span>{accent?.label}</span> {nomEv || typeFinal}
+                {accent && <accent.icon size={16} />} {nomEv || typeFinal}
               </div>
             )}
             {djId && djs && (
-              <div style={{ fontSize: 12, color: 'rgba(240,240,248,0.4)', marginTop: 6 }}>
-                🎧 {djs.find(d => d.id === djId)?.nom ?? ''}
+              <div style={{ fontSize: 12, color: 'rgba(240,240,248,0.4)', marginTop: 6, display: 'flex', alignItems: 'center', gap: 6 }}>
+                <Headphones size={12} /> {djs.find(d => d.id === djId)?.nom ?? ''}
               </div>
             )}
             {djMode === 'nouveau' && djNom && (
-              <div style={{ fontSize: 12, color: 'rgba(240,240,248,0.4)', marginTop: 6 }}>🎧 {djNom}</div>
+              <div style={{ fontSize: 12, color: 'rgba(240,240,248,0.4)', marginTop: 6, display: 'flex', alignItems: 'center', gap: 6 }}><Headphones size={12} /> {djNom}</div>
             )}
-            <div style={{ fontSize: 12, color: 'rgba(240,240,248,0.4)', marginTop: 6 }}>
-              🕐 {horaire.label}
+            <div style={{ fontSize: 12, color: 'rgba(240,240,248,0.4)', marginTop: 6, display: 'flex', alignItems: 'center', gap: 6 }}>
+              <Clock size={12} /> {horaire.label}
             </div>
             {promotion && (
-              <div style={{ fontSize: 12, color: 'rgba(240,240,248,0.4)', marginTop: 6 }}>🎁 {promotion}</div>
+              <div style={{ fontSize: 12, color: 'rgba(240,240,248,0.4)', marginTop: 6, display: 'flex', alignItems: 'center', gap: 6 }}><Gift size={12} /> {promotion}</div>
             )}
           </div>
         )}
@@ -533,9 +536,13 @@ export default function OngletPlanifier() {
             opacity: saving ? 0.7 : 1,
             transition: 'all 0.2s',
             letterSpacing: '0.02em',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: 8,
           }}
         >
-          {saving ? 'Planification...' : '✦ Planifier cette soirée'}
+          {saving ? 'Planification...' : <><Sparkles size={16} /> Planifier cette soirée</>}
         </button>
 
         {erreurPlanification && (

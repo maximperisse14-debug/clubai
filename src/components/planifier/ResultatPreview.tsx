@@ -1,3 +1,5 @@
+import { Users, Euro, Zap, Sparkles, Circle, TrendingDown, X, type LucideIcon } from 'lucide-react'
+
 interface Props {
   freq: number | null
   ca: number | null
@@ -6,12 +8,12 @@ interface Props {
   loading?: boolean
 }
 
-function getScoreLabel(score: number): { label: string; color: string; bg: string } {
-  if (score >= 85) return { label: '⚡ Soirée forte', color: '#4fe882', bg: 'rgba(79,232,130,0.12)' }
-  if (score >= 70) return { label: '✦ Bonne soirée', color: '#86efac', bg: 'rgba(134,239,172,0.10)' }
-  if (score >= 50) return { label: '◎ Soirée correcte', color: '#fbbf24', bg: 'rgba(251,191,36,0.10)' }
-  if (score >= 30) return { label: '↓ Soirée faible', color: '#f0954a', bg: 'rgba(240,149,74,0.10)' }
-  return { label: '✕ Déconseillée', color: '#f09595', bg: 'rgba(240,149,149,0.10)' }
+function getScoreLabel(score: number): { label: string; icon: LucideIcon; color: string; bg: string } {
+  if (score >= 85) return { label: 'Soirée forte', icon: Zap, color: '#4fe882', bg: 'rgba(79,232,130,0.12)' }
+  if (score >= 70) return { label: 'Bonne soirée', icon: Sparkles, color: '#86efac', bg: 'rgba(134,239,172,0.10)' }
+  if (score >= 50) return { label: 'Soirée correcte', icon: Circle, color: '#fbbf24', bg: 'rgba(251,191,36,0.10)' }
+  if (score >= 30) return { label: 'Soirée faible', icon: TrendingDown, color: '#f0954a', bg: 'rgba(240,149,74,0.10)' }
+  return { label: 'Déconseillée', icon: X, color: '#f09595', bg: 'rgba(240,149,149,0.10)' }
 }
 
 export default function ResultatPreview({ freq, ca, scoreTheme, hwBase, loading }: Props) {
@@ -45,6 +47,8 @@ export default function ResultatPreview({ freq, ca, scoreTheme, hwBase, loading 
     )
   }
 
+  const score = scoreTheme ? getScoreLabel(scoreTheme) : null
+
   return (
     <div>
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 12 }}>
@@ -60,7 +64,7 @@ export default function ResultatPreview({ freq, ca, scoreTheme, hwBase, loading 
             Fréquentation estimée
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-            <span style={{ fontSize: 22 }}>👥</span>
+            <Users size={22} style={{ color: '#4fa3e8' }} />
             <div>
               <span style={{ fontSize: 28, fontWeight: 800, color: '#4fa3e8', lineHeight: 1 }}>{freq}</span>
               <span style={{ fontSize: 13, color: 'rgba(240,240,248,0.3)', marginLeft: 5 }}>pers.</span>
@@ -79,7 +83,7 @@ export default function ResultatPreview({ freq, ca, scoreTheme, hwBase, loading 
             CA estimé
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-            <span style={{ fontSize: 22 }}>💶</span>
+            <Euro size={22} style={{ color: '#a07cff' }} />
             <div>
               <span style={{ fontSize: 28, fontWeight: 800, color: '#a07cff', lineHeight: 1 }}>{(ca / 1000).toFixed(1)}k</span>
               <span style={{ fontSize: 13, color: 'rgba(240,240,248,0.3)', marginLeft: 5 }}>€</span>
@@ -89,7 +93,7 @@ export default function ResultatPreview({ freq, ca, scoreTheme, hwBase, loading 
       </div>
 
       {/* Score thème + base HW */}
-      {!!scoreTheme && !!hwBase && (
+      {!!scoreTheme && !!hwBase && score && (
         <div style={{ marginTop: 12 }}>
           {/* Barre de score */}
           <div style={{ height: 4, borderRadius: 2, background: 'rgba(255,255,255,0.06)', overflow: 'hidden', marginBottom: 10 }}>
@@ -115,11 +119,11 @@ export default function ResultatPreview({ freq, ca, scoreTheme, hwBase, loading 
             alignItems: 'center',
             padding: '10px 14px',
             borderRadius: 10,
-            background: getScoreLabel(scoreTheme).bg,
-            border: `1px solid ${getScoreLabel(scoreTheme).color}25`,
+            background: score.bg,
+            border: `1px solid ${score.color}25`,
           }}>
-            <span style={{ fontSize: 13, fontWeight: 700, color: getScoreLabel(scoreTheme).color }}>
-              {getScoreLabel(scoreTheme).label}
+            <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: 13, fontWeight: 700, color: score.color }}>
+              <score.icon size={14} /> {score.label}
             </span>
             <span style={{ fontSize: 11, color: 'rgba(240,240,248,0.3)' }}>
               Base HW · {hwBase} pers.

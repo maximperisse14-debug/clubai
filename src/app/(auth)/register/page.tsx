@@ -50,8 +50,8 @@ export default function RegisterPage() {
     <div className="min-h-screen flex items-center justify-center bg-background px-4">
       <div className="w-full max-w-sm space-y-6">
         <div className="flex flex-col items-center gap-2">
-          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-purple-600 to-pink-500 flex items-center justify-center text-white font-bold">CA</div>
-          <h1 className="text-xl font-semibold bg-gradient-to-r from-purple-400 to-teal-400 bg-clip-text text-transparent">ClubAI Analytics</h1>
+          <div className="w-10 h-10 rounded-xl flex items-center justify-center text-white font-bold" style={{ background: 'var(--grad)' }}>CA</div>
+          <h1 className="text-xl font-semibold text-grad">ClubAI Analytics</h1>
         </div>
         <Card>
           <CardHeader>
@@ -79,7 +79,7 @@ export default function RegisterPage() {
             </form>
             <p className="text-center text-sm text-muted-foreground mt-4">
               Déjà un compte ?{' '}
-              <Link href="/login" className="text-purple-400 hover:underline">Se connecter</Link>
+              <Link href="/login" className="hover:underline" style={{ color: 'var(--c2)' }}>Se connecter</Link>
             </p>
           </CardContent>
         </Card>

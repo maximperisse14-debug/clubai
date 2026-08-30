@@ -1,4 +1,5 @@
 'use client'
+import { useMemo } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { createClient } from '@/lib/supabase/client'
 import { startOfWeek, endOfWeek, startOfMonth, endOfMonth, format, eachDayOfInterval, getDay } from 'date-fns'
@@ -38,7 +39,7 @@ export function usePlanning(
   dateRef: Date,
   clubId: string | undefined,
 ) {
-  const supabase = createClient()
+  const supabase = useMemo(() => createClient(), [])
 
   return useQuery({
     queryKey: ['planning', mode, format(dateRef, 'yyyy-MM-dd'), clubId],
@@ -52,28 +53,29 @@ export function usePlanning(
         ? endOfWeek(dateRef, { weekStartsOn: 1 })
         : endOfMonth(dateRef)
 
-      const { data: settings } = await supabase
-        .from('club_settings')
-        .select('jours_ouverture, zone_vacances, region')
-        .eq('club_id', clubId)
-        .single()
+      const [{ data: settings }, { data: soirees }] = await Promise.all([
+        supabase
+          .from('club_settings')
+          .select('jours_ouverture, zone_vacances, region')
+          .eq('club_id', clubId)
+          .single(),
+        supabase
+          .from('soirees')
+          .select(`
+            id, date, nom_evenement, type_evenement,
+            heure_ouverture, heure_fermeture, promotion,
+            prediction_freq, prediction_ca,
+            prediction_freq_initiale, prediction_ca_initiale,
+            variation_freq_24h, variation_ca_24h,
+            djs ( nom )
+          `)
+          .eq('club_id', clubId)
+          .gte('date', format(debut, 'yyyy-MM-dd'))
+          .lte('date', format(fin, 'yyyy-MM-dd'))
+          .order('date'),
+      ])
 
       const joursOuverture: string[] = settings?.jours_ouverture ?? ['Mercredi', 'Jeudi', 'Vendredi', 'Samedi']
-
-      const { data: soirees } = await supabase
-        .from('soirees')
-        .select(`
-          id, date, nom_evenement, type_evenement,
-          heure_ouverture, heure_fermeture, promotion,
-          prediction_freq, prediction_ca,
-          prediction_freq_initiale, prediction_ca_initiale,
-          variation_freq_24h, variation_ca_24h,
-          djs ( nom )
-        `)
-        .eq('club_id', clubId)
-        .gte('date', format(debut, 'yyyy-MM-dd'))
-        .lte('date', format(fin, 'yyyy-MM-dd'))
-        .order('date')
 
       const soireeByDate: Record<string, any> = {}
       soirees?.forEach((s: any) => { soireeByDate[s.date] = s })
