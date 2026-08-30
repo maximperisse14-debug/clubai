@@ -8,7 +8,8 @@ import { Label } from '@/components/ui/label'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { createBrowserClient } from '@supabase/ssr'
+import { createClient } from '@/lib/supabase/client'
+import type { Json } from '@/types/database'
 import JoursOuvertureSection from '@/components/reglages/JoursOuvertureSection'
 import AlertesSection from '@/components/reglages/AlertesSection'
 import HorairesSection, { type HorairePreset } from '@/components/reglages/HorairesSection'
@@ -48,10 +49,7 @@ const schema = z.object({
 
 type FormData = z.infer<typeof schema>
 
-const supabase = createBrowserClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-)
+const supabase = createClient()
 
 async function geocodeAdresse(adresse: string): Promise<{ lat: number; lon: number } | null> {
   try {
@@ -126,7 +124,7 @@ export default function ReglagesPage() {
       setValue('adresse',            s.adresse ?? '')
       if (s.jours_ouverture) setJoursOuverture(s.jours_ouverture)
       if (s.seuil_alerte_variation != null) setSeuilAlerte(s.seuil_alerte_variation)
-      if (s.horaires_preferentiels) setHorairesPreferentiels(s.horaires_preferentiels)
+      if (s.horaires_preferentiels) setHorairesPreferentiels(s.horaires_preferentiels as unknown as HorairePreset[])
       setValue('zone_vacances',      s.zone_vacances ?? 'C')
       setValue('idx_population',     Number(s.idx_population))
       setValue('pct_etudiants',      s.pct_etudiants)
@@ -182,7 +180,7 @@ export default function ReglagesPage() {
         panier_base:        data.panier_base,
         jours_ouverture:    joursOuverture,
         seuil_alerte_variation: seuilAlerte,
-        horaires_preferentiels: horairesPreferentiels,
+        horaires_preferentiels: horairesPreferentiels as unknown as Json,
         updated_at:         new Date().toISOString(),
       }, { onConflict: 'club_id' })
 

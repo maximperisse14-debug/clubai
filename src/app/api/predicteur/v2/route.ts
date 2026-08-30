@@ -1,11 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createServerClient } from '@supabase/ssr'
-import { cookies } from 'next/headers'
 import { z } from 'zod'
+import { parseISO, isValid } from 'date-fns'
+import { createClient } from '@/lib/supabase/server'
 import { calculerPredictionComplete, type ClubSettings } from '@/lib/predicteur/scoring-engine'
 
 const bodySchema = z.object({
-  date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Format attendu: YYYY-MM-DD'),
+  date: z.string()
+    .regex(/^\d{4}-\d{2}-\d{2}$/, 'Format attendu: YYYY-MM-DD')
+    .refine(d => isValid(parseISO(d)), 'Date invalide'),
   typeEvenement: z.string().min(1),
   nomEvenement: z.string().optional(),
   djId: z.string().nullable().optional(),
@@ -22,19 +24,7 @@ export async function POST(req: NextRequest) {
     }
     const body = parsed.data
 
-    const cookieStore = await cookies()
-    const supabase = createServerClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-      {
-        cookies: {
-          getAll() { return cookieStore.getAll() },
-          setAll(toSet) {
-            toSet.forEach(({ name, value, options }) => cookieStore.set(name, value, options))
-          },
-        },
-      },
-    )
+    const supabase = await createClient()
 
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })

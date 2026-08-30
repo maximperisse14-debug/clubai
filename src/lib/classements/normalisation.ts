@@ -36,39 +36,43 @@ export async function getClassement(
     .eq('dimension', dimension)
     .not('impact_pct_freq', 'is', null)
 
-  if (!data) return []
+  if (!data || data.length === 0) return []
 
   const champFiltre = dimension === 'type' ? 'type_evenement' : 'dj_nom'
+  const valeurs = data.map(c => c.valeur)
 
-  // Récupérer la distribution par jour de semaine pour chaque valeur
-  const resultats = await Promise.all(
-    data.map(async (c) => {
-      const { data: soirees } = await supabase
-        .from('soirees_completes')
-        .select('jour')
-        .eq('club_id', clubId)
-        .eq(champFiltre, c.valeur)
-        .not('freq_reelle', 'is', null)
+  // Une seule requête pour la distribution par jour de toutes les valeurs
+  // (au lieu d'une requête par ligne de coefficient)
+  const { data: soirees } = await supabase
+    .from('soirees_completes')
+    .select(`${champFiltre}, jour`)
+    .eq('club_id', clubId)
+    .in(champFiltre, valeurs)
+    .not('freq_reelle', 'is', null)
 
-      const joursCount = joursVides()
-      soirees?.forEach(s => {
-        if (s.jour && s.jour in joursCount) joursCount[s.jour]++
-      })
+  const joursParValeur: Record<string, Record<string, number>> = {}
+  soirees?.forEach((s) => {
+    const row = s as unknown as Record<string, unknown>
+    const v = row[champFiltre] as string | null
+    if (!v) return
+    if (!joursParValeur[v]) joursParValeur[v] = joursVides()
+    const jour = row.jour as string | null
+    if (jour && jour in joursParValeur[v]) joursParValeur[v][jour]++
+  })
 
-      const scoreComposite = ((c.impact_pct_freq ?? 0) + (c.impact_pct_ca ?? 0)) / 2
-
-      return {
-        valeur: c.valeur,
-        score_composite: scoreComposite,
-        impact_freq: c.impact_pct_freq ?? 0,
-        impact_ca: c.impact_pct_ca ?? 0,
-        freq_brute_moy: Math.round(c.freq_brute_moy ?? 0),
-        ca_brut_moy: Math.round(c.ca_brut_moy ?? 0),
-        nb_soirees: c.nb_soirees ?? 0,
-        jours_par_semaine: joursCount,
-      }
-    })
-  )
+  const resultats = data.map(c => {
+    const scoreComposite = ((c.impact_pct_freq ?? 0) + (c.impact_pct_ca ?? 0)) / 2
+    return {
+      valeur: c.valeur,
+      score_composite: scoreComposite,
+      impact_freq: c.impact_pct_freq ?? 0,
+      impact_ca: c.impact_pct_ca ?? 0,
+      freq_brute_moy: Math.round(c.freq_brute_moy ?? 0),
+      ca_brut_moy: Math.round(c.ca_brut_moy ?? 0),
+      nb_soirees: c.nb_soirees ?? 0,
+      jours_par_semaine: joursParValeur[c.valeur] ?? joursVides(),
+    }
+  })
 
   return resultats
     .sort((a, b) => b.score_composite - a.score_composite)

@@ -71,8 +71,8 @@ export default function OngletPlanifier() {
   const [djNom, setDjNom] = useState<string>('')
   const [djMode, setDjMode] = useState<'liste' | 'nouveau'>('liste')
 
-  const HORAIRES_PRESETS: HorairePreset[] = (settings?.horaires_preferentiels as HorairePreset[] | undefined)?.length
-    ? (settings!.horaires_preferentiels as HorairePreset[])
+  const HORAIRES_PRESETS: HorairePreset[] = (settings?.horaires_preferentiels as unknown as HorairePreset[] | undefined)?.length
+    ? (settings!.horaires_preferentiels as unknown as HorairePreset[])
     : HORAIRES_DEFAUT
   const [horaire, setHoraire] = useState<HorairePreset>(HORAIRES_DEFAUT[1])
   const [showHoraireLibre, setShowHoraireLibre] = useState(false)
@@ -100,6 +100,7 @@ export default function OngletPlanifier() {
   // Calcul en temps réel dès que date + thème sont renseignés
   useEffect(() => {
     if (!date || !typeFinal || !club?.id) return
+    const controller = new AbortController()
     const timer = setTimeout(async () => {
       setLoading(true)
       setErreur('')
@@ -115,6 +116,7 @@ export default function OngletPlanifier() {
             djId: djMode === 'nouveau' ? null : (djId || null),
             djNom: djNomFinal,
           }),
+          signal: controller.signal,
         })
         if (!res.ok) throw new Error()
         const result = await res.json()
@@ -122,7 +124,8 @@ export default function OngletPlanifier() {
         setCA(result.caEstime)
         setScoreTheme(result.scoreTheme)
         setHwBase(result.hwBase?.freq ?? null)
-      } catch {
+      } catch (err) {
+        if (err instanceof DOMException && err.name === 'AbortError') return
         setFreq(null)
         setCA(null)
         setErreur('Impossible de calculer la prévision pour cette date (jour non ouvert ?)')
@@ -130,7 +133,10 @@ export default function OngletPlanifier() {
         setLoading(false)
       }
     }, 400) // debounce 400ms
-    return () => clearTimeout(timer)
+    return () => {
+      clearTimeout(timer)
+      controller.abort()
+    }
   }, [date, typeFinal, djId, djNom, djMode, nomEv, club?.id, djs])
 
   async function handlePlanifier() {

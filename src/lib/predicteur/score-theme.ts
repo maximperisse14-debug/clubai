@@ -1,8 +1,8 @@
 export interface CoeffRow {
   dimension: string
   valeur: string
-  impact_pct_freq: number
-  nb_soirees: number
+  impact_pct_freq: number | null
+  nb_soirees: number | null
 }
 
 const COEF_TYPE_DEFAUT: Record<string, number> = {

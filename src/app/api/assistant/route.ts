@@ -77,6 +77,18 @@ export async function POST(req: Request) {
         return NextResponse.json({ message: text, tools_called: toolsCalled })
       }
 
+      // Réponse tronquée — pas la peine de retenter la même requête
+      if (response.stop_reason === 'max_tokens') {
+        const text = response.content
+          .filter((b: any) => b.type === 'text')
+          .map((b: any) => b.text)
+          .join('\n')
+        return NextResponse.json({
+          message: text ? `${text}\n\n(réponse tronquée)` : 'Réponse trop longue, réessaie avec une question plus précise.',
+          tools_called: toolsCalled,
+        })
+      }
+
       // Appels d'outils
       if (response.stop_reason === 'tool_use') {
         const toolUseBlocks = response.content.filter((b: any) => b.type === 'tool_use')
@@ -125,7 +137,16 @@ export async function POST(req: Request) {
           { role: 'assistant' as const, content: response.content },
           { role: 'user' as const, content: toolResults },
         ]
+        continue
       }
+
+      // stop_reason inattendu (refusal, pause_turn, stop_sequence...) — pas
+      // la peine de renvoyer la même requête en boucle, on s'arrête ici.
+      console.error('[assistant] stop_reason inattendu:', response.stop_reason)
+      return NextResponse.json({
+        message: 'Je n\'ai pas pu terminer ma réponse, réessaie ta question.',
+        tools_called: toolsCalled,
+      })
     }
 
     return NextResponse.json({ message: 'Réponse non obtenue après 5 tours.', tools_called: toolsCalled })

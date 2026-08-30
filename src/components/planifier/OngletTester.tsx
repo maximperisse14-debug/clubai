@@ -1,5 +1,5 @@
 'use client'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { format, getDay } from 'date-fns'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
@@ -51,6 +51,7 @@ export default function OngletTester() {
   ])
   const [saving, setSaving] = useState<number | null>(null)
   const [erreurPlanification, setErreurPlanification] = useState('')
+  const abortControllersRef = useRef<Record<number, AbortController>>({})
 
   const joursOuverture = joursOuvertureVersGetDay(
     settings?.jours_ouverture ?? ['Mercredi', 'Jeudi', 'Vendredi', 'Samedi']
@@ -63,6 +64,11 @@ export default function OngletTester() {
   async function calculeScenario(idx: number, overrides?: Partial<Scenario>) {
     const base = { ...scenarios[idx], ...overrides }
     if (!date || !base.typeEv || !club?.id) return
+
+    abortControllersRef.current[idx]?.abort()
+    const controller = new AbortController()
+    abortControllersRef.current[idx] = controller
+
     updateScenario(idx, { ...overrides, loading: true })
     try {
       const djNom = djs?.find(d => d.id === base.djId)?.nom ?? null
@@ -76,6 +82,7 @@ export default function OngletTester() {
           djId: base.djId || null,
           djNom,
         }),
+        signal: controller.signal,
       })
       if (!res.ok) throw new Error()
       const result = await res.json()
@@ -86,7 +93,8 @@ export default function OngletTester() {
         hwBase: result.hwBase?.freq ?? null,
         loading: false,
       })
-    } catch {
+    } catch (err) {
+      if (err instanceof DOMException && err.name === 'AbortError') return
       updateScenario(idx, { freq: null, ca: null, loading: false })
     }
   }

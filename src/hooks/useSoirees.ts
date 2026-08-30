@@ -19,6 +19,7 @@ export function useSoirees(
       if (filters?.mois) q = q.eq('mois', filters.mois)
       if (filters?.jour) q = q.eq('jour', filters.jour)
       if (filters?.type) q = q.eq('type_evenement', filters.type)
+      if (filters?.dj) q = q.eq('dj_id', filters.dj)
 
       const { data, error } = await q
       if (error) throw error

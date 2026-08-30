@@ -2,6 +2,7 @@
 import { useForm, type SubmitHandler } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
+import { parseISO } from 'date-fns'
 import { createClient } from '@/lib/supabase/client'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -49,7 +50,7 @@ interface Props {
 }
 
 function jourFromDate(dateStr: string): string {
-  const d = new Date(dateStr)
+  const d = parseISO(dateStr)
   const jours = ['Dimanche', 'Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi']
   return jours[d.getDay()]
 }
@@ -105,7 +106,7 @@ export default function SoireeForm({ clubId, djs, onSuccess }: Props) {
     }
 
     if (data.freq_reelle !== undefined) {
-      await supabase.from('resultats').insert({
+      const { error: resultatsErr } = await supabase.from('resultats').insert({
         soiree_id: soiree.id,
         club_id: clubId,
         freq_reelle: data.freq_reelle,
@@ -117,11 +118,12 @@ export default function SoireeForm({ clubId, djs, onSuccess }: Props) {
         reach_ig: data.reach_ig,
       })
 
-      await fetch('/api/coefficients/recalcul', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ club_id: clubId }),
-      })
+      if (resultatsErr) {
+        alert('La soirée est enregistrée, mais les résultats n\'ont pas pu être sauvegardés : ' + resultatsErr.message)
+        return
+      }
+
+      await fetch('/api/coefficients/recalcul', { method: 'POST' })
     }
 
     onSuccess?.()
