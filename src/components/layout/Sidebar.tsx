@@ -1,5 +1,6 @@
 'use client'
 import Link from 'next/link'
+import Image from 'next/image'
 import { usePathname } from 'next/navigation'
 import { CalendarDays, PlusCircle, Bot, Trophy, Database, Settings } from 'lucide-react'
 import { cn } from '@/lib/utils'
@@ -22,18 +23,14 @@ export default function Sidebar() {
     }}>
       {/* Logo */}
       <div className="p-5 border-b" style={{ borderColor: 'var(--b1)' }}>
-        <div className="flex items-center gap-2.5">
-          <div
-            className="w-8 h-8 rounded-lg flex items-center justify-center text-white font-bold text-sm shrink-0"
-            style={{ background: 'var(--grad)' }}
-          >
-            CA
-          </div>
-          <div>
-            <div className="font-bold text-sm text-grad">ClubAI</div>
-            <div className="text-[10px]" style={{ color: 'var(--t3)' }}>Analytics</div>
-          </div>
-        </div>
+        <Image
+          src="/clubai-lockup-blanc.png"
+          alt="ClubAI"
+          width={140}
+          height={40}
+          style={{ objectFit: 'contain', objectPosition: 'left' }}
+          priority
+        />
       </div>
 
       {/* Nav */}
