@@ -30,6 +30,8 @@ export interface JourPlanning {
     predCAInitiale?: number
     variationFreq24h?: number
     variationCA24h?: number
+    staffBar?: number
+    staffSecurite?: number
   }
   previsionStandard?: { freq: number; ca: number }
 }
@@ -67,6 +69,7 @@ export function usePlanning(
             prediction_freq, prediction_ca,
             prediction_freq_initiale, prediction_ca_initiale,
             variation_freq_24h, variation_ca_24h,
+            staff_bar, staff_securite,
             djs ( nom )
           `)
           .eq('club_id', clubId)
@@ -119,6 +122,8 @@ export function usePlanning(
             predCAInitiale: soiree.prediction_ca_initiale,
             variationFreq24h: soiree.variation_freq_24h,
             variationCA24h: soiree.variation_ca_24h,
+            staffBar: soiree.staff_bar ?? undefined,
+            staffSecurite: soiree.staff_securite ?? undefined,
           } : undefined,
           previsionStandard,
         })

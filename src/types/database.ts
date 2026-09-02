@@ -31,6 +31,7 @@ export interface Database {
           prediction_score_global: number | null; prediction_calculee_le: string | null
           prediction_freq_initiale: number | null; prediction_ca_initiale: number | null
           variation_freq_24h: number | null; variation_ca_24h: number | null
+          staff_bar: number | null; staff_securite: number | null
           created_at: string
         }
         Insert: {
@@ -41,6 +42,7 @@ export interface Database {
           prix_entree?: number | null; budget_com?: number | null; staff?: number | null
           heure_ouverture?: string | null; heure_fermeture?: string | null; canal_acquisition?: string | null
           promotion?: string | null
+          staff_bar?: number | null; staff_securite?: number | null
           prediction_freq?: number | null; prediction_ca?: number | null
           prediction_score_global?: number; prediction_calculee_le?: string
         }
